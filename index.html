@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chord Tower</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts: EB Garamond for classic Roman numeral look -->
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&display=swap" rel="stylesheet">
+  <style>
+    html, body, #app-wrapper, .main-content {
+      height: 100%; min-height: 0; min-width: 0;
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    #app-wrapper { display: flex; flex-direction: column; height: 100vh; }
+    .controls-bar {
+      width: 100vw;
+      box-sizing: border-box;
+      padding: 0.5vmin 0.5vmin 0 0.5vmin;
+      background: #faf8f0;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: stretch;
+      gap: 1.5vw;
+      border-bottom: 1px solid #eee;
+      z-index: 10;
+      flex-shrink: 0;
+      flex-grow: 0;
+      flex-basis: auto;
+      transition: flex-direction 0.2s;
+    }
+    .main-content {
+      flex: 1 1 0;
+      display: flex; flex-direction: column;
+      min-height: 0; min-width: 0; height: 100%;
+      overflow: hidden; position: relative;
+    }
+    .proportional-grid-wrapper {
+      flex: 1 1 0;
+      min-height: 0; min-width: 0;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; width: 100vw; overflow: hidden;
+    }
+    .grid {
+      position: relative;
+      width: 100%; height: 100%;
+    }
+    .cell, .note-button {
+      border-radius: 1vmin;
+      position: absolute;
+      display: flex; justify-content: center; align-items: center;
+      font-weight: bold;
+      color: white;
+      user-select: none;
+      transition: transform 0.1s, background-color 0.3s, font-size 0.2s;
+      outline: none;
+      min-width: 0; min-height: 0;
+      background: transparent;
+      z-index: 1;
+      font-family: 'EB Garamond', Garamond, 'Times New Roman', Times, serif;
+      letter-spacing: 0.02em;
+    }
+    .note-button { z-index: 2; }
+    .active { transform: scale(1.30); }
+    .control-area {
+      outline: none;
+      border-radius: 0.8vmin;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(1rem, min(2.8vw, 2.8vh, 2em), 2em);
+      padding: 0.3em 1em;
+      background: #fff;
+      white-space: nowrap;
+      margin: 0;
+      font-family: inherit;
+    }
+    .control-area.selected {
+      box-shadow: 0 0 0 0.6vmin #444a, 0 1px 8px #0002;
+      background: #ffff;
+    }
+    .arrow {
+      cursor: pointer;
+      padding: 0.2em 0.5em;
+      user-select: none;
+      font-size: inherit;
+      font-family: inherit;
+    }
+    .volume-control {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.5vw;
+      font-size: clamp(1rem, min(2.2vw, 2.2vh, 1.2em), 1.2em);
+      user-select: none;
+      padding: 0.1em 0.6em;
+      background: #fff;
+      border-radius: 0.8vmin;
+      margin: 0;
+      font-family: inherit;
+    }
+    .volume-slider {
+      width: min(16vw, 140px);
+      accent-color: #007AFF;
+      cursor: pointer;
+      min-width: 60px;
+      max-width: 180px;
+    }
+    .volume-label { font-weight: bold; margin-right: 0.3em; }
+    .volume-value {
+      width: 3.2em;
+      text-align: left;
+      color: #444;
+      font-variant-numeric: tabular-nums;
+      font-size: 1em;
+      margin-left: 0.3em;
+      letter-spacing: 0.04em;
+    }
+    .cell img.solfege-img {
+      max-width: 80%;
+      max-height: 80%;
+      width: auto;
+      height: auto;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+      margin: auto;
+      background: transparent;
+    }
+    @media (max-width: 550px) {
+      .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding-bottom: 0;
+        padding-top: 0;
+      }
+      .control-area, .volume-control {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        border-top: none;
+        border-bottom: 1px solid #eee;
+        background: #fff;
+        justify-content: center;
+        min-height: 0;
+        min-width: 0;
+        font-size: clamp(1rem, min(2.5vw, 2.5vh, 1.5em), 1.5em);
+      }
+      .controls-bar > *:last-child {
+        border-bottom: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-wrapper">
+    <div class="controls-bar" id="controls-bar"></div>
+    <div class="main-content">
+      <div class="proportional-grid-wrapper">
+        <div class="grid" id="grid"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // --- AUDIO & STATE ---
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    const waveforms = ['sine', 'triangle', 'square', 'sawtooth', 'voice'];
+    let currentWaveformIndex = 1;
+    let currentWaveform = waveforms[currentWaveformIndex];
+    let globalVolume = 0.4;
+
+    const keyNames = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+    let currentKeyIndex = 0;
+
+    const baseFrequencies = {
+      'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
+      'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'Bb3': 233.08, 'Bb4': 466.16, 'G#4': 415.30, 'F#4': 369.99
+    };
+    let noteFrequencies = { ...baseFrequencies };
+
+    const semitoneShiftMap = {'C':0,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'Gb':6,'G':-5,'Ab':-4,'A':-3,'Bb':-2,'B':-1};
+    function transposeFrequency(freq, semitoneShift) {
+      return freq * Math.pow(2, semitoneShift / 12);
+    }
+    function updateTransposedFrequencies() {
+      const shift = semitoneShiftMap[keyNames[currentKeyIndex]];
+      noteFrequencies = {};
+      for (const [note, freq] of Object.entries(baseFrequencies)) {
+        noteFrequencies[note] = transposeFrequency(freq, shift);
+      }
+    }
+
+    // Color mapping for each key, IV/IV always matches B box of original system.
+    // V/V always matches ii, V/vi always matches iii.
+    const noteColorsByKey = {
+      'C':   { 'I': '#FF3B30',    'ii': '#FF9500', 'iii': '#FFCC00', 'IV': '#34C759', 'V': '#5af5fa', 'vi': '#007AFF', 'IV/IV': '#AF52DE' },
+      'Db':  { 'I': '#FF9500',    'ii': '#FFCC00', 'iii': '#34C759', 'IV': '#5af5fa', 'V': '#007AFF', 'vi': '#AF52DE', 'IV/IV': '#FF3B30' },
+      'D':   { 'I': '#FF9500',    'ii': '#FFCC00', 'iii': '#34C759', 'IV': '#5af5fa', 'V': '#007AFF', 'vi': '#AF52DE', 'IV/IV': '#FF3B30' },
+      'Eb':  { 'I': '#FFCC00',    'ii': '#34C759', 'iii': '#5af5fa', 'IV': '#007AFF', 'V': '#AF52DE', 'vi': '#FF3B30', 'IV/IV': '#FF9500' },
+      'E':   { 'I': '#FFCC00',    'ii': '#34C759', 'iii': '#5af5fa', 'IV': '#007AFF', 'V': '#AF52DE', 'vi': '#FF3B30', 'IV/IV': '#FF9500' },
+      'F':   { 'I': '#34C759',    'ii': '#5af5fa', 'iii': '#007AFF', 'IV': '#AF52DE', 'V': '#FF3B30', 'vi': '#FF9500', 'IV/IV': '#FFCC00' },
+      'Gb':  { 'I': '#5af5fa',    'ii': '#007AFF', 'iii': '#AF52DE', 'IV': '#FF3B30', 'V': '#FF9500', 'vi': '#FFCC00', 'IV/IV': '#34C759' },
+      'G':   { 'I': '#5af5fa',    'ii': '#007AFF', 'iii': '#AF52DE', 'IV': '#FF3B30', 'V': '#FF9500', 'vi': '#FFCC00', 'IV/IV': '#34C759' },
+      'Ab':  { 'I': '#007AFF',    'ii': '#AF52DE', 'iii': '#FF3B30', 'IV': '#FF9500', 'V': '#FFCC00', 'vi': '#34C759', 'IV/IV': '#5af5fa' },
+      'A':   { 'I': '#007AFF',    'ii': '#AF52DE', 'iii': '#FF3B30', 'IV': '#FF9500', 'V': '#FFCC00', 'vi': '#34C759', 'IV/IV': '#5af5fa' },
+      'Bb':  { 'I': '#AF52DE',    'ii': '#FF3B30', 'iii': '#FF9500', 'IV': '#FFCC00', 'V': '#34C759', 'vi': '#5af5fa', 'IV/IV': '#007AFF' },
+      'B':   { 'I': '#AF52DE',    'ii': '#FF3B30', 'iii': '#FF9500', 'IV': '#FFCC00', 'V': '#34C759', 'vi': '#5af5fa', 'IV/IV': '#007AFF' }
+    };
+
+    const harmonics = 20;
+    const real = new Float32Array(harmonics);
+    const imag = new Float32Array(harmonics);
+    real[1] = 1;
+    real[2] = 0.15;
+    real[3] = 0.1;
+    real[4] = 0.05;
+    for (let i = 5; i < harmonics; i++) real[i] = 0;
+    const customVoiceWave = context.createPeriodicWave(real, imag);
+
+    const activeOscillators = {};
+    const heldKeys = new Set();
+    const accidentalHeld = { sharp: false, flat: false };
+    const heldNoteKeys = new Set();
+    let sharpTouchHeld = false;
+    let flatTouchHeld = false;
+
+    function getAccidentalShift() {
+      if (sharpTouchHeld && flatTouchHeld) return 0;
+      if (sharpTouchHeld) return 1;
+      if (flatTouchHeld) return -1;
+      if (accidentalHeld.sharp && accidentalHeld.flat) return 0;
+      if (accidentalHeld.sharp) return 1;
+      if (accidentalHeld.flat) return -1;
+      return 0;
+    }
+
+    function startNote(key, freqOrFreqs) {
+      stopNote(key);
+      let oscList = [];
+      let gainList = [];
+      let lfoList = [];
+      let lfoGainList = [];
+      let filterList = [];
+      let freqs = Array.isArray(freqOrFreqs) ? freqOrFreqs : [freqOrFreqs];
+      freqs.forEach((freq, i) => {
+        let osc, gain, lfo, lfoGain, filter;
+        gain = context.createGain();
+        if (currentWaveform === "voice") {
+          osc = context.createOscillator();
+          osc.setPeriodicWave(customVoiceWave);
+          osc.frequency.value = freq;
+          lfo = context.createOscillator();
+          lfoGain = context.createGain();
+          lfo.frequency.setValueAtTime(1.5, context.currentTime);
+          lfo.frequency.linearRampToValueAtTime(5, context.currentTime + 1);
+          lfoGain.gain.setValueAtTime(2.0, context.currentTime);
+          lfo.connect(lfoGain);
+          lfoGain.connect(osc.frequency);
+          lfo.start();
+          filter = context.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1200, context.currentTime);
+          filter.Q.value = 1;
+          osc.connect(filter);
+          filter.connect(gain);
+          const now = context.currentTime;
+          const attackTime = 0.08;
+          const decayTime = 0.18;
+          const sustainLevel = globalVolume * 0.5;
+          const maxLevel = globalVolume * 0.85;
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(maxLevel, now + attackTime);
+          gain.gain.linearRampToValueAtTime(sustainLevel, now + attackTime + decayTime);
+          gain.connect(context.destination);
+          osc.start();
+          oscList.push(osc);
+          gainList.push(gain);
+          lfoList.push(lfo);
+          lfoGainList.push(lfoGain);
+          filterList.push(filter);
+        } else {
+          osc = context.createOscillator();
+          osc.type = currentWaveform;
+          osc.frequency.value = freq;
+          filter = context.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1200, context.currentTime);
+          filter.Q.value = 1;
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(context.destination);
+          gain.gain.setValueAtTime(globalVolume / freqs.length, context.currentTime); // scale volume for chords
+          osc.start();
+          oscList.push(osc);
+          gainList.push(gain);
+          filterList.push(filter);
+        }
+      });
+      activeOscillators[key] = { oscList, gainList, lfoList, lfoGainList, filterList };
+    }
+
+    function stopNote(key) {
+      const active = activeOscillators[key];
+      if (!active) return;
+      const now = context.currentTime;
+      if (active.oscList) {
+        active.oscList.forEach((osc, i) => {
+          const gain = active.gainList[i];
+          if (currentWaveform === "voice") {
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(gain.gain.value, now);
+            const releaseTime = 0.6;
+            const stopBuffer = 0.1;
+            gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
+            osc.stop(now + releaseTime + stopBuffer);
+            if (active.lfoList[i]) active.lfoList[i].stop(now + releaseTime + stopBuffer);
+          } else {
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(gain.gain.value, now);
+            const releaseTime = 1.2;
+            const stopBuffer = 0.1;
+            gain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
+            osc.stop(now + releaseTime + stopBuffer);
+          }
+        });
+      }
+      delete activeOscillators[key];
+    }
+
+    function handlePlayKey(key) {
+      const btn = buttons.find(b => b.key === key);
+      if (!btn) return;
+      heldNoteKeys.add(key);
+      const accidental = getAccidentalShift();
+      const oscKey = `${key}_${accidental}`;
+      let freqOrFreqs;
+      if (btn.notes) {
+        freqOrFreqs = btn.notes.map(n => {
+          if (n === "D4") return noteFrequencies[n] * Math.pow(2, accidental / 12);
+          return noteFrequencies[n] || 0;
+        });
+      } else {
+        freqOrFreqs = noteFrequencies[btn.note] * Math.pow(2, accidental / 12);
+      }
+      startNote(oscKey, freqOrFreqs);
+    }
+
+    function handleStopKey(key) {
+      heldNoteKeys.delete(key);
+      stopNote(`${key}_0`);
+      stopNote(`${key}_1`);
+      stopNote(`${key}_-1`);
+    }
+
+    function reTriggerHeldKeysAccidentals() {
+      for (const key of heldNoteKeys) {
+        stopNote(`${key}_0`);
+        stopNote(`${key}_1`);
+        stopNote(`${key}_-1`);
+        const btn = buttons.find(b => b.key === key);
+        if (!btn) continue;
+        const accidental = getAccidentalShift();
+        const oscKey = `${key}_${accidental}`;
+        let freqOrFreqs;
+        if (btn.notes) {
+          freqOrFreqs = btn.notes.map(n => {
+            if (n === "D4") return noteFrequencies[n] * Math.pow(2, accidental / 12);
+            return noteFrequencies[n] || 0;
+          });
+        } else {
+          freqOrFreqs = noteFrequencies[btn.note] * Math.pow(2, accidental / 12);
+        }
+        startNote(oscKey, freqOrFreqs);
+      }
+    }
+
+    const positions = {
+      '10a': [9, 0], '10b': [9, 1], '10c': [9, 2], '10d': [9, 3],
+      '3a': [2, 0], '4a': [3, 0], '3b': [2, 1], '4b': [3, 1], '3c': [2, 2], '4c': [3, 2],
+      '5a': [4, 0], '6a': [5, 0],
+      '5b': [4, 1], '6b': [5, 1], '7b': [6, 1], '5c': [4, 2], '6c': [5, 2], '7c': [6, 2],
+      '8b': [7, 1], '8c': [7, 2],
+      '9b': [8, 1], '9c': [8, 2],
+      '4d': [3, 3], '3d': [2, 3],
+      '2a': [1, 0], '2b': [1, 1], '2c': [1, 2], '2d': [1, 3]
+    };
+
+    const gridRows = 10;
+
+    const buttons = [
+      { name: 'V/V', key: '1', notes: ['D4', 'F#4', 'A4', 'D5'], cells: ['2a', '2b'] },
+      { name: 'V/vi', key: '2', notes: ['E4', 'G#4', 'B4', 'E5'], cells: ['2c','2d'] },
+      { name: 'IV', key: 'f', notes: ['F4','A4','C5','F5'], cells: ['3a','4a'] },
+      { name: 'V', key: 'q', notes: ['G4','B4','D5','G5'], cells: ['3b','4b','3c','4c'] },
+      { name: 'iii', key: 'd', notes: ['E4','G4','B4','E5'], cells: ['5a'] },
+      { name: 'ii', key: 's', notes: ['D4','F4','A4','D5'], cells: ['6a'] },
+      { name: 'I', key: 'a', notes: ['C4','E4','G4','C5'], cells: ['5b','6b','7b','5c','6c','7c'] },
+      { name: 'IV/IV', key: 'x', notes: ['Bb3','D4','F4','Bb4'], cells: ['8b','8c'] },
+      { name: 'vi', key: 'w', notes: ['A4','C5','E5','A5'], cells: ['4d','3d'] }
+    ];
+
+    const grid = document.getElementById('grid');
+    const keyToDiv = {};
+
+    function updateSolfegeColors() {
+      const currentKey = keyNames[currentKeyIndex];
+      const bgColors = noteColorsByKey[currentKey];
+      buttons.forEach(btn => {
+        const div = keyToDiv[btn.key];
+        if (div) {
+          // V/V should always match ii
+          if (btn.name === "V/V") {
+            div.style.backgroundColor = bgColors['ii'] || "#FF9500";
+          }
+          // V/vi should always match iii
+          else if (btn.name === "V/vi") {
+            div.style.backgroundColor = bgColors['iii'] || "#FFCC00";
+          }
+          // IV/IV is special, always matches B color from original system (already set in bgColors['IV/IV'])
+          else if (btn.name === "IV/IV") {
+            div.style.backgroundColor = bgColors['IV/IV'] || "#AF52DE";
+          }
+          else {
+            div.style.backgroundColor = bgColors[btn.name] || '#ccc';
+          }
+        }
+      });
+    }
+
+    const cellRefs = {};
+    for (let r = 1; r < 11; r++) {
+      for (let c = 0; c < 4; c++) {
+        const div = document.createElement('div');
+        div.className = 'cell';
+        div.style.top = (r * (100 / 11)) + '%';
+        div.style.left = (c * (100 / 4)) + '%';
+        div.style.width = (100 / 4 - 0.5) + '%';
+        div.style.height = (100 / 11 - 0.5) + '%';
+        const rowNum = r + 1; // r=1 -> rowNum=2, up to r=10->rowNum=11
+        const colLetter = String.fromCharCode(97 + c);
+        cellRefs[`${rowNum}${colLetter}`] = div;
+        grid.appendChild(div);
+      }
+    }
+
+    cellRefs['6d'].innerHTML = '<img class="solfege-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/MusicAppSharpSign3.png" alt="Sharp">';
+    cellRefs['7d'].innerHTML = '<img class="solfege-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/MusicAppFlatSign3.png" alt="Flat">';
+
+    function setSharpTouchHeld(val) {
+      sharpTouchHeld = val;
+      if (val) cellRefs['6d'].classList.add('active');
+      else cellRefs['6d'].classList.remove('active');
+      reTriggerHeldKeysAccidentals();
+    }
+    function setFlatTouchHeld(val) {
+      flatTouchHeld = val;
+      if (val) cellRefs['7d'].classList.add('active');
+      else cellRefs['7d'].classList.remove('active');
+      reTriggerHeldKeysAccidentals();
+    }
+
+    cellRefs['6d'].addEventListener('touchstart', function(e) { e.preventDefault(); setSharpTouchHeld(true); });
+    cellRefs['6d'].addEventListener('mousedown', function(e) { e.preventDefault(); setSharpTouchHeld(true); });
+    cellRefs['6d'].addEventListener('touchend', function(e) { setSharpTouchHeld(false); });
+    cellRefs['6d'].addEventListener('mouseup', function(e) { setSharpTouchHeld(false); });
+    cellRefs['6d'].addEventListener('mouseleave', function(e) { setSharpTouchHeld(false); });
+    cellRefs['6d'].addEventListener('touchcancel', function(e) { setSharpTouchHeld(false); });
+
+    cellRefs['7d'].addEventListener('touchstart', function(e) { e.preventDefault(); setFlatTouchHeld(true); });
+    cellRefs['7d'].addEventListener('mousedown', function(e) { e.preventDefault(); setFlatTouchHeld(true); });
+    cellRefs['7d'].addEventListener('touchend', function(e) { setFlatTouchHeld(false); });
+    cellRefs['7d'].addEventListener('mouseup', function(e) { setFlatTouchHeld(false); });
+    cellRefs['7d'].addEventListener('mouseleave', function(e) { setFlatTouchHeld(false); });
+    cellRefs['7d'].addEventListener('touchcancel', function(e) { setFlatTouchHeld(false); });
+
+    const controlsBar = document.getElementById('controls-bar');
+    const keyButton = document.createElement('div');
+    keyButton.className = 'control-area';
+    keyButton.tabIndex = 0;
+    keyButton.setAttribute('aria-label', 'Key control');
+    keyButton.innerHTML = '<div class="arrow" id="key-left">&#9664;</div><div id="key-name">C Major</div><div class="arrow" id="key-right">&#9654;</div>';
+    const waveButton = document.createElement('div');
+    waveButton.className = 'control-area';
+    waveButton.tabIndex = 0;
+    waveButton.setAttribute('aria-label', 'Waveform control');
+    waveButton.innerHTML = '<div class="arrow" id="left-arrow">&#9664;</div><div id="waveform-name">triangle</div><div class="arrow" id="right-arrow">&#9654;</div>';
+    const volumeControl = document.createElement('div');
+    volumeControl.className = 'volume-control';
+    volumeControl.innerHTML = `
+      <span class="volume-label" id="volume-label" for="volume-slider">Volume</span>
+      <input type="range" min="0" max="1" step="0.01" value="0.4" id="volume-slider" class="volume-slider" aria-label="Volume slider">
+      <span class="volume-value" id="volume-value">40%</span>
+    `;
+    volumeControl.tabIndex = 0;
+    volumeControl.setAttribute('aria-label', 'Volume control');
+    volumeControl.style.outline = 'none';
+    volumeControl.addEventListener('focus', () => {
+      volumeControl.style.boxShadow = '0 0 0 0.5vmin #007aff88';
+    });
+    volumeControl.addEventListener('blur', () => {
+      volumeControl.style.boxShadow = 'none';
+    });
+    volumeControl.addEventListener('keydown', (e) => {
+      const slider = document.getElementById('volume-slider');
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        slider.value = Math.max(0, parseFloat(slider.value) - 0.02);
+        slider.dispatchEvent(new Event('input'));
+        e.preventDefault();
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        slider.value = Math.min(1, parseFloat(slider.value) + 0.02);
+        slider.dispatchEvent(new Event('input'));
+        e.preventDefault();
+      }
+    });
+    controlsBar.appendChild(keyButton);
+    controlsBar.appendChild(waveButton);
+    controlsBar.appendChild(volumeControl);
+    document.getElementById("key-left").onclick = () => {
+      currentKeyIndex = (currentKeyIndex - 1 + keyNames.length) % keyNames.length;
+      document.getElementById("key-name").textContent = keyNames[currentKeyIndex] + ' Major';
+      updateTransposedFrequencies();
+      updateSolfegeColors();
+    };
+    document.getElementById("key-right").onclick = () => {
+      currentKeyIndex = (currentKeyIndex + 1) % keyNames.length;
+      document.getElementById("key-name").textContent = keyNames[currentKeyIndex] + ' Major';
+      updateTransposedFrequencies();
+      updateSolfegeColors();
+    };
+    document.getElementById("left-arrow").onclick = () => {
+      currentWaveformIndex = (currentWaveformIndex - 1 + waveforms.length) % waveforms.length;
+      currentWaveform = waveforms[currentWaveformIndex];
+      document.getElementById("waveform-name").textContent = currentWaveform;
+    };
+    document.getElementById("right-arrow").onclick = () => {
+      currentWaveformIndex = (currentWaveformIndex + 1) % waveforms.length;
+      currentWaveform = waveforms[currentWaveformIndex];
+      document.getElementById("waveform-name").textContent = currentWaveform;
+    };
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    volumeSlider.value = globalVolume;
+    volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
+    volumeSlider.addEventListener('input', () => {
+      globalVolume = parseFloat(volumeSlider.value);
+      volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
+    });
+    let controlMode = null;
+    function selectControl(which) {
+      controlMode = which;
+      keyButton.classList.toggle('selected', which === 'key');
+      waveButton.classList.toggle('selected', which === 'waveform');
+      volumeControl.style.boxShadow = which === 'volume' ? '0 0 0 0.5vmin #007aff88' : 'none';
+      if (which === 'key') keyButton.focus();
+      if (which === 'waveform') waveButton.focus();
+      if (which === 'volume') volumeControl.focus();
+    }
+    keyButton.onclick = () => selectControl('key');
+    keyButton.onfocus = () => selectControl('key');
+    waveButton.onclick = () => selectControl('waveform');
+    waveButton.onfocus = () => selectControl('waveform');
+    volumeControl.onclick = () => selectControl('volume');
+    volumeControl.onfocus = () => selectControl('volume');
+    keyButton.onblur = () => keyButton.classList.remove('selected');
+    waveButton.onblur = () => waveButton.classList.remove('selected');
+    buttons.forEach(btn => {
+      const div = document.createElement('div');
+      div.className = 'note-button';
+      div.textContent = btn.name;
+      div.style.outline = 'none';
+      // Colors are set in updateSolfegeColors for all boxes, including V/V and V/vi
+      const rows = [...new Set(btn.cells.map(c => positions[c][0]))];
+      const cols = [...new Set(btn.cells.map(c => positions[c][1]))];
+      const top = Math.min(...rows) * (100 / 11);
+      const left = Math.min(...cols) * (100 / 4);
+      const height = rows.length * (100 / 11) - 0.5;
+      const width = cols.length * (100 / 4) - 0.5;
+      div.style.top = `${top}%`;
+      div.style.left = `${left}%`;
+      div.style.height = `${height}%`;
+      div.style.width = `${width}%`;
+      let isTouching = false;
+      div.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isTouching = true;
+        handlePlayKey(btn.key);
+        div.classList.add('active');
+        window.focus();
+      });
+      div.addEventListener('mouseup', () => {
+        isTouching = false;
+        handleStopKey(btn.key);
+        div.classList.remove('active');
+      });
+      div.addEventListener('mouseleave', () => {
+        isTouching = false;
+        handleStopKey(btn.key);
+        div.classList.remove('active');
+      });
+      div.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isTouching = true;
+        handlePlayKey(btn.key);
+        div.classList.add('active');
+        window.focus();
+      });
+      div.addEventListener('touchend', () => {
+        isTouching = false;
+        handleStopKey(btn.key);
+        div.classList.remove('active');
+      });
+      div.addEventListener('touchcancel', () => {
+        isTouching = false;
+        handleStopKey(btn.key);
+        div.classList.remove('active');
+      });
+      grid.appendChild(div);
+      keyToDiv[btn.key] = div;
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      let accidentalChanged = false;
+      if (e.key === '=') {
+        accidentalHeld.sharp = true; accidentalChanged = true;
+        cellRefs['6d'].classList.add('active');
+      }
+      if (e.key === '-') {
+        accidentalHeld.flat = true; accidentalChanged = true;
+        cellRefs['7d'].classList.add('active');
+      }
+      if (document.activeElement === keyButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        if (e.key === 'ArrowLeft') document.getElementById('key-left').click();
+        else if (e.key === 'ArrowRight') document.getElementById('key-right').click();
+        e.preventDefault();
+        return;
+      }
+      if (document.activeElement === waveButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        if (e.key === 'ArrowLeft') document.getElementById('left-arrow').click();
+        else if (e.key === 'ArrowRight') document.getElementById('right-arrow').click();
+        e.preventDefault();
+        return;
+      }
+      if (document.activeElement === volumeControl && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+        e.preventDefault();
+        return;
+      }
+      if (!heldKeys.has(e.key) && buttons.some(b => b.key === e.key)) {
+        heldKeys.add(e.key);
+        handlePlayKey(e.key);
+        if (keyToDiv[e.key]) keyToDiv[e.key].classList.add('active');
+      }
+      if (accidentalChanged) {
+        reTriggerHeldKeysAccidentals();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      let accidentalChanged = false;
+      if (e.key === '=') {
+        accidentalHeld.sharp = false; accidentalChanged = true;
+        cellRefs['6d'].classList.remove('active');
+      }
+      if (e.key === '-') {
+        accidentalHeld.flat = false; accidentalChanged = true;
+        cellRefs['7d'].classList.remove('active');
+      }
+      if (heldKeys.has(e.key)) {
+        heldKeys.delete(e.key);
+        handleStopKey(e.key);
+        if (keyToDiv[e.key]) keyToDiv[e.key].classList.remove('active');
+      }
+      if (accidentalChanged) {
+        reTriggerHeldKeysAccidentals();
+      }
+    });
+
+    function resizeGrid() {
+      const gridEl = document.getElementById('grid');
+      const gridWrapper = document.querySelector('.proportional-grid-wrapper');
+      const gwRect = gridWrapper.getBoundingClientRect();
+      const availableWidth = gwRect.width;
+      const availableHeight = gwRect.height;
+      const aspectW = 4;
+      const aspectH = 11;
+      let gridWidth = availableHeight * (aspectW/aspectH);
+      let gridHeight = availableHeight;
+      if (gridWidth > availableWidth) {
+        gridWidth = availableWidth;
+        gridHeight = availableWidth * (aspectH/aspectW);
+      }
+      gridEl.style.width = gridWidth + 'px';
+      gridEl.style.height = gridHeight + 'px';
+      gridEl.style.marginLeft = "auto";
+      gridEl.style.marginRight = "auto";
+      gridEl.style.marginTop = "0";
+      gridEl.style.marginBottom = "0";
+      const fontSize = Math.min(gridHeight / 11, gridWidth / 4) * 0.5;
+      gridEl.querySelectorAll('.note-button').forEach(div=>{
+        div.style.fontSize = fontSize + 'px';
+      });
+      gridEl.querySelectorAll('.cell').forEach(div=>{
+        div.style.fontSize = fontSize + 'px';
+      });
+    }
+    window.addEventListener('resize', resizeGrid);
+    window.addEventListener('DOMContentLoaded', () => setTimeout(() => { resizeGrid(); updateSolfegeColors(); }, 1));
+    setTimeout(() => { resizeGrid(); updateSolfegeColors(); }, 200);
+    const mq = window.matchMedia("(max-width: 550px)");
+    mq.addEventListener("change", () => { resizeGrid(); updateSolfegeColors(); });
+
+    // Update colors after key change
+    updateSolfegeColors();
+  </script>
+</body>
+</html>
