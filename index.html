@@ -29,12 +29,14 @@
     let currentKeyIndex = 0;
 
     const baseFrequencies = {
+      'C3': 130.81, 'G3': 196.00, 'E3': 164.81, 'A3': 220.00, 'B3': 246.94, 'D3': 146.83, 'F3': 174.61, 'G#3': 207.65,
       'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
       'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'Bb3': 233.08, 'Bb4': 466.16, 'G#4': 415.30, 'F#4': 369.99
     };
     let noteFrequencies = { ...baseFrequencies };
 
-    const semitoneShiftMap = {'C':0,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'Gb':6,'G':-5,'Ab':-4,'A':-3,'Bb':-2,'B':-1};
+    // G now transposes UP a perfect 5th (+7), not down a perfect 4th (-5)
+    const semitoneShiftMap = {'C':0,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'Gb':6,'G':7,'Ab':-4,'A':-3,'Bb':-2,'B':-1};
     function transposeFrequency(freq, semitoneShift) {
       return freq * Math.pow(2, semitoneShift / 12);
     }
@@ -267,22 +269,25 @@
       '8b': [7, 1], '8c': [7, 2],
       '9b': [8, 1], '9c': [8, 2],
       '4d': [3, 3], '3d': [2, 3],
-      '2a': [1, 0], '2b': [1, 1], '2c': [1, 2], '2d': [1, 3]
+      '2a': [1, 0], '2b': [1, 1], '2c': [1, 2], '2d': [1, 3],
+      // cells d for 5,6,7 for easier placement
+      '5d': [4, 3], '6d': [5, 3], '7d': [6, 3]
     };
 
     const gridRows = 10;
 
     // --- BUTTONS: keep a reference to each note-button div for updating their text ---
+    // CHANGED: notes for n (IV/IV)
     const buttons = [
       { name: 'V/V', key: '8', notes: ['D4', 'F#4', 'A4', 'D5'], cells: ['2a', '2b'] },
-      { name: 'V/vi', key: '9', notes: ['E4', 'G#4', 'B4', 'E5'], cells: ['2c','2d'] },
-      { name: 'IV', key: 'u', notes: ['F4','A4','C5','F5'], cells: ['3a','4a'] },
-      { name: 'V', key: 'i', notes: ['G4','B4','D5','G5'], cells: ['3b','4b','3c','4c'] },
-      { name: 'iii', key: 'l', notes: ['E4','G4','B4','E5'], cells: ['5a'] },
-      { name: 'ii', key: 'k', notes: ['D4','F4','A4','D5'], cells: ['6a'] },
-      { name: 'I', key: 'j', notes: ['C4','E4','G4','C5'], cells: ['5b','6b','7b','5c','6c','7c'] },
-      { name: 'IV/IV', key: 'n', notes: ['Bb3','D4','F4','Bb4'], cells: ['8b','8c'] },
-      { name: 'vi', key: 'o', notes: ['A4','C5','E5','A5'], cells: ['4d','3d'] }
+      { name: 'V/vi', key: '9', notes: ['G#3', 'E4', 'B4', 'E5'], cells: ['2c','2d'] },
+      { name: 'IV', key: 'u', notes: ['F3','C4','F4','A4'], cells: ['3a','4a'] },
+      { name: 'V', key: 'i', notes: ['G3','G4','B4','D5'], cells: ['3b','4b','3c','4c'] },
+      { name: 'iii', key: 'l', notes: ['E3','B3','E4','G4'], cells: ['5a'] },
+      { name: 'ii', key: 'k', notes: ['D3','A3','D4','F4'], cells: ['6a'] },
+      { name: 'I', key: 'j', notes: ['C3','G3','E4','C5'], cells: ['5b','6b','7b','5c','6c','7c'] },
+      { name: 'IV/IV', key: 'n', notes: ['F3','Bb3','D4','F4'], cells: ['8b','8c'] },
+      { name: 'vi', key: 'o', notes: ['A3','E4','A4','C5'], cells: ['4d','3d'] }
     ];
 
     const grid = document.getElementById('grid');
@@ -329,9 +334,10 @@
       }
     }
 
-    // --- Remove images in 6d and 7d, and use 6d for toggle button, 7d blank ---
-    // Add a light grey border to cell 6d
-    cellRefs['6d'].classList.add('toggle-cell-border');
+    // --- Remove images in 6d and 7d, and use 5d for toggle button, 6d and 7d blank ---
+    // CHANGED: toggle to cell 5d instead of 6d
+    cellRefs['5d'].classList.add('toggle-cell-border');
+    cellRefs['6d'].classList.remove('toggle-cell-border'); // just in case
 
     // State for the C/I button
     let cButtonState = 'C'; // can be 'C' or 'I'
@@ -391,12 +397,13 @@
         }
       });
       // Clear old content and insert
-      cellRefs['6d'].innerHTML = '';
-      cellRefs['6d'].appendChild(el);
+      cellRefs['5d'].innerHTML = '';
+      cellRefs['5d'].appendChild(el);
     }
     renderToggleButton();
 
-    // cellRefs['7d'] left blank (no flat image)
+    // CHANGED: clear the old cellRefs['6d'] and cellRefs['7d']
+    cellRefs['6d'].innerHTML = '';
     cellRefs['7d'].innerHTML = '';
 
     // --- Create note-buttons and keep refs for updating ---
@@ -542,7 +549,7 @@
         div.style.fontSize = fontSize + 'px';
       });
       // Also resize the C/I button if it exists
-      const toggleBtn = cellRefs['6d'].querySelector('.chord-toggle-btn');
+      const toggleBtn = cellRefs['5d'].querySelector('.chord-toggle-btn');
       if (toggleBtn) toggleBtn.style.fontSize = Math.max(fontSize * 1.1, 20) + 'px';
     }
     window.addEventListener('resize', resizeGrid);
