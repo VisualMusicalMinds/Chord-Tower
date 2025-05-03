@@ -114,6 +114,35 @@ html, body, #app-wrapper, .main-content {
   margin: auto;
   background: transparent;
 }
+
+/* Chord toggle button (C/I) in grid cell */
+.chord-toggle-btn {
+  font-family: 'EB Garamond', Garamond, 'Times New Roman', Times, serif;
+  font-weight: bold;
+  font-size: 2em;
+  background: transparent;
+  border: none;
+  color: #222;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: background 0.15s, color 0.15s, font-size 0.15s;
+}
+.chord-toggle-btn:focus {
+  outline: 2px solid #007AFF;
+  background: #f4f8ff;
+}
+
+/* Light grey border for the cell containing the toggle button */
+.toggle-cell-border {
+  border: 2.5px solid #ddd !important;
+  box-sizing: border-box;
+}
+
 @media (max-width: 550px) {
   .controls-bar {
     flex-direction: column;
