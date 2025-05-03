@@ -1,4 +1,4 @@
-https://github.com/VisualMusicalMinds/Chord-Tower/blob/main/index.html<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -62,6 +62,35 @@ https://github.com/VisualMusicalMinds/Chord-Tower/blob/main/index.html<!DOCTYPE 
       'Bb':  { 'I': '#AF52DE',    'ii': '#FF3B30', 'iii': '#FF9500', 'IV': '#FFCC00', 'V': '#34C759', 'vi': '#5af5fa', 'IV/IV': '#007AFF' },
       'B':   { 'I': '#AF52DE',    'ii': '#FF3B30', 'iii': '#FF9500', 'IV': '#FFCC00', 'V': '#34C759', 'vi': '#5af5fa', 'IV/IV': '#007AFF' }
     };
+
+    // --- Chord/Alt names for all keys ---
+    const chordNamesDefault = {
+      "8": "V/V",
+      "9": "V/vi",
+      "u": "IV",
+      "i": "V",
+      "o": "vi",
+      "l": "iii",
+      "k": "ii",
+      "j": "I",
+      "n": "IV/IV"
+    };
+    // Order: V/V, V/vi, IV, V, vi, iii, ii, I, IV/IV
+    const chordNamesAltByKey = {
+      "C":  ["D",   "E",   "F",  "G",  "Am",  "Em",  "Dm",  "C",  "Bb"],
+      "Db": ["Eb",  "F",   "Gb", "Ab", "Bbm", "Fm",  "Ebm", "Db", "Cb"],
+      "D":  ["E",   "F#",  "G",  "A",  "Bm",  "F#m", "Em",  "D",  "C"],
+      "Eb": ["F",   "G",   "Ab", "Bb", "Cm",  "Gm",  "Fm",  "Eb", "Db"],
+      "E":  ["F#",  "G#",  "A",  "B",  "C#m", "G#m", "F#m", "E",  "D"],
+      "F":  ["G",   "A",   "Bb", "C",  "Dm",  "Am",  "Gm",  "F",  "Eb"],
+      "Gb": ["Ab",  "Bb",  "Cb", "Db", "Ebm", "Bbm", "Abm", "Gb", "Fb"],
+      "G":  ["A",   "B",   "C",  "D",  "Em",  "Bm",  "Am",  "G",  "F"],
+      "Ab": ["Bb",  "C",   "Db", "Eb", "Fm",  "Cm",  "Bbm", "Ab", "Gb"],
+      "A":  ["B",   "C#",  "D",  "E",  "F#m", "C#m", "Bm",  "A",  "G"],
+      "Bb": ["C",   "D",   "Eb", "F",  "Gm",  "Dm",  "Cm",  "Bb", "Ab"],
+      "B":  ["C#",  "D#",  "E",  "F#", "G#m", "D#m", "C#m", "B",  "A"]
+    };
+    const buttonOrder = ["8", "9", "u", "i", "o", "l", "k", "j", "n"];
 
     const harmonics = 20;
     const real = new Float32Array(harmonics);
@@ -243,6 +272,7 @@ https://github.com/VisualMusicalMinds/Chord-Tower/blob/main/index.html<!DOCTYPE 
 
     const gridRows = 10;
 
+    // --- BUTTONS: keep a reference to each note-button div for updating their text ---
     const buttons = [
       { name: 'V/V', key: '8', notes: ['D4', 'F#4', 'A4', 'D5'], cells: ['2a', '2b'] },
       { name: 'V/vi', key: '9', notes: ['E4', 'G#4', 'B4', 'E5'], cells: ['2c','2d'] },
@@ -299,133 +329,82 @@ https://github.com/VisualMusicalMinds/Chord-Tower/blob/main/index.html<!DOCTYPE 
       }
     }
 
-    cellRefs['6d'].innerHTML = '<img class="solfege-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/MusicAppSharpSign3.png" alt="Sharp">';
-    cellRefs['7d'].innerHTML = '<img class="solfege-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/MusicAppFlatSign3.png" alt="Flat">';
+    // --- Remove images in 6d and 7d, and use 6d for toggle button, 7d blank ---
+    // Add a light grey border to cell 6d
+    cellRefs['6d'].classList.add('toggle-cell-border');
 
-    function setSharpTouchHeld(val) {
-      sharpTouchHeld = val;
-      if (val) cellRefs['6d'].classList.add('active');
-      else cellRefs['6d'].classList.remove('active');
-      reTriggerHeldKeysAccidentals();
-    }
-    function setFlatTouchHeld(val) {
-      flatTouchHeld = val;
-      if (val) cellRefs['7d'].classList.add('active');
-      else cellRefs['7d'].classList.remove('active');
-      reTriggerHeldKeysAccidentals();
-    }
+    // State for the C/I button
+    let cButtonState = 'C'; // can be 'C' or 'I'
 
-    cellRefs['6d'].addEventListener('touchstart', function(e) { e.preventDefault(); setSharpTouchHeld(true); });
-    cellRefs['6d'].addEventListener('mousedown', function(e) { e.preventDefault(); setSharpTouchHeld(true); });
-    cellRefs['6d'].addEventListener('touchend', function(e) { setSharpTouchHeld(false); });
-    cellRefs['6d'].addEventListener('mouseup', function(e) { setSharpTouchHeld(false); });
-    cellRefs['6d'].addEventListener('mouseleave', function(e) { setSharpTouchHeld(false); });
-    cellRefs['6d'].addEventListener('touchcancel', function(e) { setSharpTouchHeld(false); });
+    // For updating chord box names
+    const noteButtonRefs = {}; // key -> div
 
-    cellRefs['7d'].addEventListener('touchstart', function(e) { e.preventDefault(); setFlatTouchHeld(true); });
-    cellRefs['7d'].addEventListener('mousedown', function(e) { e.preventDefault(); setFlatTouchHeld(true); });
-    cellRefs['7d'].addEventListener('touchend', function(e) { setFlatTouchHeld(false); });
-    cellRefs['7d'].addEventListener('mouseup', function(e) { setFlatTouchHeld(false); });
-    cellRefs['7d'].addEventListener('mouseleave', function(e) { setFlatTouchHeld(false); });
-    cellRefs['7d'].addEventListener('touchcancel', function(e) { setFlatTouchHeld(false); });
-
-    const controlsBar = document.getElementById('controls-bar');
-    const keyButton = document.createElement('div');
-    keyButton.className = 'control-area';
-    keyButton.tabIndex = 0;
-    keyButton.setAttribute('aria-label', 'Key control');
-    keyButton.innerHTML = '<div class="arrow" id="key-left">&#9664;</div><div id="key-name">C Major</div><div class="arrow" id="key-right">&#9654;</div>';
-    const waveButton = document.createElement('div');
-    waveButton.className = 'control-area';
-    waveButton.tabIndex = 0;
-    waveButton.setAttribute('aria-label', 'Waveform control');
-    waveButton.innerHTML = '<div class="arrow" id="left-arrow">&#9664;</div><div id="waveform-name">triangle</div><div class="arrow" id="right-arrow">&#9654;</div>';
-    const volumeControl = document.createElement('div');
-    volumeControl.className = 'volume-control';
-    volumeControl.innerHTML = `
-      <span class="volume-label" id="volume-label" for="volume-slider">Volume</span>
-      <input type="range" min="0" max="1" step="0.01" value="0.4" id="volume-slider" class="volume-slider" aria-label="Volume slider">
-      <span class="volume-value" id="volume-value">40%</span>
-    `;
-    volumeControl.tabIndex = 0;
-    volumeControl.setAttribute('aria-label', 'Volume control');
-    volumeControl.style.outline = 'none';
-    volumeControl.addEventListener('focus', () => {
-      volumeControl.style.boxShadow = '0 0 0 0.5vmin #007aff88';
-    });
-    volumeControl.addEventListener('blur', () => {
-      volumeControl.style.boxShadow = 'none';
-    });
-    volumeControl.addEventListener('keydown', (e) => {
-      const slider = document.getElementById('volume-slider');
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-        slider.value = Math.max(0, parseFloat(slider.value) - 0.02);
-        slider.dispatchEvent(new Event('input'));
-        e.preventDefault();
+    // Helper: update box names based on toggle and key
+    function updateBoxNames() {
+      const currentKey = keyNames[currentKeyIndex];
+      const useAlt = (cButtonState === 'I');
+      if (useAlt && chordNamesAltByKey[currentKey]) {
+        buttonOrder.forEach((key, idx) => {
+          if (noteButtonRefs[key]) {
+            noteButtonRefs[key].textContent = chordNamesAltByKey[currentKey][idx];
+          }
+        });
+      } else {
+        Object.entries(chordNamesDefault).forEach(([key, name]) => {
+          if (noteButtonRefs[key]) {
+            noteButtonRefs[key].textContent = name;
+          }
+        });
       }
-      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-        slider.value = Math.min(1, parseFloat(slider.value) + 0.02);
-        slider.dispatchEvent(new Event('input'));
-        e.preventDefault();
-      }
-    });
-    controlsBar.appendChild(keyButton);
-    controlsBar.appendChild(waveButton);
-    controlsBar.appendChild(volumeControl);
-    document.getElementById("key-left").onclick = () => {
-      currentKeyIndex = (currentKeyIndex - 1 + keyNames.length) % keyNames.length;
-      document.getElementById("key-name").textContent = keyNames[currentKeyIndex] + ' Major';
-      updateTransposedFrequencies();
-      updateSolfegeColors();
-    };
-    document.getElementById("key-right").onclick = () => {
-      currentKeyIndex = (currentKeyIndex + 1) % keyNames.length;
-      document.getElementById("key-name").textContent = keyNames[currentKeyIndex] + ' Major';
-      updateTransposedFrequencies();
-      updateSolfegeColors();
-    };
-    document.getElementById("left-arrow").onclick = () => {
-      currentWaveformIndex = (currentWaveformIndex - 1 + waveforms.length) % waveforms.length;
-      currentWaveform = waveforms[currentWaveformIndex];
-      document.getElementById("waveform-name").textContent = currentWaveform;
-    };
-    document.getElementById("right-arrow").onclick = () => {
-      currentWaveformIndex = (currentWaveformIndex + 1) % waveforms.length;
-      currentWaveform = waveforms[currentWaveformIndex];
-      document.getElementById("waveform-name").textContent = currentWaveform;
-    };
-    const volumeSlider = document.getElementById('volume-slider');
-    const volumeValue = document.getElementById('volume-value');
-    volumeSlider.value = globalVolume;
-    volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
-    volumeSlider.addEventListener('input', () => {
-      globalVolume = parseFloat(volumeSlider.value);
-      volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
-    });
-    let controlMode = null;
-    function selectControl(which) {
-      controlMode = which;
-      keyButton.classList.toggle('selected', which === 'key');
-      waveButton.classList.toggle('selected', which === 'waveform');
-      volumeControl.style.boxShadow = which === 'volume' ? '0 0 0 0.5vmin #007aff88' : 'none';
-      if (which === 'key') keyButton.focus();
-      if (which === 'waveform') waveButton.focus();
-      if (which === 'volume') volumeControl.focus();
     }
-    keyButton.onclick = () => selectControl('key');
-    keyButton.onfocus = () => selectControl('key');
-    waveButton.onclick = () => selectControl('waveform');
-    waveButton.onfocus = () => selectControl('waveform');
-    volumeControl.onclick = () => selectControl('volume');
-    volumeControl.onfocus = () => selectControl('volume');
-    keyButton.onblur = () => keyButton.classList.remove('selected');
-    waveButton.onblur = () => waveButton.classList.remove('selected');
+
+    function renderToggleButton() {
+      const el = document.createElement('button');
+      el.className = 'chord-toggle-btn';
+      el.setAttribute('type', 'button');
+      el.setAttribute('aria-pressed', cButtonState === 'I');
+      el.style.fontFamily = "'EB Garamond', Garamond, 'Times New Roman', Times, serif";
+      el.style.fontWeight = "bold";
+      el.style.fontSize = "2em"; // About 10% smaller than before
+      el.style.background = "transparent";
+      el.style.border = "none";
+      el.style.color = "#222";
+      el.style.width = "100%";
+      el.style.height = "100%";
+      el.style.cursor = "pointer";
+      el.style.display = "flex";
+      el.style.alignItems = "center";
+      el.style.justifyContent = "center";
+      el.innerText = cButtonState === 'C' ? 'C' : 'I';
+      el.addEventListener('click', () => {
+        cButtonState = (cButtonState === 'C') ? 'I' : 'C';
+        renderToggleButton();
+        updateBoxNames();
+      });
+      // For accessibility, toggle on space/enter
+      el.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          cButtonState = (cButtonState === 'C') ? 'I' : 'C';
+          renderToggleButton();
+          updateBoxNames();
+        }
+      });
+      // Clear old content and insert
+      cellRefs['6d'].innerHTML = '';
+      cellRefs['6d'].appendChild(el);
+    }
+    renderToggleButton();
+
+    // cellRefs['7d'] left blank (no flat image)
+    cellRefs['7d'].innerHTML = '';
+
+    // --- Create note-buttons and keep refs for updating ---
     buttons.forEach(btn => {
       const div = document.createElement('div');
       div.className = 'note-button';
-      div.textContent = btn.name;
+      div.textContent = chordNamesDefault[btn.key];
       div.style.outline = 'none';
-      // Colors are set in updateSolfegeColors for all boxes, including V/V and V/vi
       const rows = [...new Set(btn.cells.map(c => positions[c][0]))];
       const cols = [...new Set(btn.cells.map(c => positions[c][1]))];
       const top = Math.min(...rows) * (100 / 11);
@@ -473,65 +452,68 @@ https://github.com/VisualMusicalMinds/Chord-Tower/blob/main/index.html<!DOCTYPE 
       });
       grid.appendChild(div);
       keyToDiv[btn.key] = div;
+      noteButtonRefs[btn.key] = div;
     });
 
-    window.addEventListener('keydown', (e) => {
-      if (e.repeat) return;
-      let accidentalChanged = false;
-      if (e.key === '=') {
-        accidentalHeld.sharp = true; accidentalChanged = true;
-        cellRefs['6d'].classList.add('active');
-      }
-      if (e.key === '-') {
-        accidentalHeld.flat = true; accidentalChanged = true;
-        cellRefs['7d'].classList.add('active');
-      }
-      if (document.activeElement === keyButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-        if (e.key === 'ArrowLeft') document.getElementById('key-left').click();
-        else if (e.key === 'ArrowRight') document.getElementById('key-right').click();
-        e.preventDefault();
-        return;
-      }
-      if (document.activeElement === waveButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-        if (e.key === 'ArrowLeft') document.getElementById('left-arrow').click();
-        else if (e.key === 'ArrowRight') document.getElementById('right-arrow').click();
-        e.preventDefault();
-        return;
-      }
-      if (document.activeElement === volumeControl && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-        e.preventDefault();
-        return;
-      }
-      if (!heldKeys.has(e.key) && buttons.some(b => b.key === e.key)) {
-        heldKeys.add(e.key);
-        handlePlayKey(e.key);
-        if (keyToDiv[e.key]) keyToDiv[e.key].classList.add('active');
-      }
-      if (accidentalChanged) {
-        reTriggerHeldKeysAccidentals();
-      }
+    // --- CONTROLS BAR (unchanged) ---
+    const controlsBar = document.getElementById('controls-bar');
+    const keyButton = document.createElement('div');
+    keyButton.className = 'control-area';
+    keyButton.tabIndex = 0;
+    keyButton.setAttribute('aria-label', 'Key control');
+    keyButton.innerHTML = '<div class="arrow" id="key-left">&#9664;</div><div id="key-name">C Major</div><div class="arrow" id="key-right">&#9654;</div>';
+    const waveButton = document.createElement('div');
+    waveButton.className = 'control-area';
+    waveButton.tabIndex = 0;
+    waveButton.setAttribute('aria-label', 'Waveform control');
+    waveButton.innerHTML = '<div class="arrow" id="left-arrow">&#9664;</div><div id="waveform-name">triangle</div><div class="arrow" id="right-arrow">&#9654;</div>';
+    const volumeControl = document.createElement('div');
+    volumeControl.className = 'volume-control';
+    volumeControl.innerHTML = `
+      <span class="volume-label" id="volume-label" for="volume-slider">Volume</span>
+      <input type="range" min="0" max="1" step="0.01" value="0.4" id="volume-slider" class="volume-slider" aria-label="Volume slider">
+      <span class="volume-value" id="volume-value">40%</span>
+    `;
+    volumeControl.tabIndex = 0;
+    volumeControl.setAttribute('aria-label', 'Volume control');
+    controlsBar.appendChild(keyButton);
+    controlsBar.appendChild(waveButton);
+    controlsBar.appendChild(volumeControl);
+
+    document.getElementById("key-left").onclick = () => {
+      currentKeyIndex = (currentKeyIndex - 1 + keyNames.length) % keyNames.length;
+      document.getElementById("key-name").textContent = keyNames[currentKeyIndex] + ' Major';
+      updateTransposedFrequencies();
+      updateSolfegeColors();
+      updateBoxNames();
+    };
+    document.getElementById("key-right").onclick = () => {
+      currentKeyIndex = (currentKeyIndex + 1) % keyNames.length;
+      document.getElementById("key-name").textContent = keyNames[currentKeyIndex] + ' Major';
+      updateTransposedFrequencies();
+      updateSolfegeColors();
+      updateBoxNames();
+    };
+    document.getElementById("left-arrow").onclick = () => {
+      currentWaveformIndex = (currentWaveformIndex - 1 + waveforms.length) % waveforms.length;
+      currentWaveform = waveforms[currentWaveformIndex];
+      document.getElementById("waveform-name").textContent = currentWaveform;
+    };
+    document.getElementById("right-arrow").onclick = () => {
+      currentWaveformIndex = (currentWaveformIndex + 1) % waveforms.length;
+      currentWaveform = waveforms[currentWaveformIndex];
+      document.getElementById("waveform-name").textContent = currentWaveform;
+    };
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    volumeSlider.value = globalVolume;
+    volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
+    volumeSlider.addEventListener('input', () => {
+      globalVolume = parseFloat(volumeSlider.value);
+      volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
     });
 
-    window.addEventListener('keyup', (e) => {
-      let accidentalChanged = false;
-      if (e.key === '=') {
-        accidentalHeld.sharp = false; accidentalChanged = true;
-        cellRefs['6d'].classList.remove('active');
-      }
-      if (e.key === '-') {
-        accidentalHeld.flat = false; accidentalChanged = true;
-        cellRefs['7d'].classList.remove('active');
-      }
-      if (heldKeys.has(e.key)) {
-        heldKeys.delete(e.key);
-        handleStopKey(e.key);
-        if (keyToDiv[e.key]) keyToDiv[e.key].classList.remove('active');
-      }
-      if (accidentalChanged) {
-        reTriggerHeldKeysAccidentals();
-      }
-    });
-
+    // --- Resize logic (unchanged, but also call updateBoxNames) ---
     function resizeGrid() {
       const gridEl = document.getElementById('grid');
       const gridWrapper = document.querySelector('.proportional-grid-wrapper');
@@ -559,15 +541,19 @@ https://github.com/VisualMusicalMinds/Chord-Tower/blob/main/index.html<!DOCTYPE 
       gridEl.querySelectorAll('.cell').forEach(div=>{
         div.style.fontSize = fontSize + 'px';
       });
+      // Also resize the C/I button if it exists
+      const toggleBtn = cellRefs['6d'].querySelector('.chord-toggle-btn');
+      if (toggleBtn) toggleBtn.style.fontSize = Math.max(fontSize * 1.1, 20) + 'px';
     }
     window.addEventListener('resize', resizeGrid);
-    window.addEventListener('DOMContentLoaded', () => setTimeout(() => { resizeGrid(); updateSolfegeColors(); }, 1));
-    setTimeout(() => { resizeGrid(); updateSolfegeColors(); }, 200);
+    window.addEventListener('DOMContentLoaded', () => setTimeout(() => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); }, 1));
+    setTimeout(() => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); }, 200);
     const mq = window.matchMedia("(max-width: 550px)");
-    mq.addEventListener("change", () => { resizeGrid(); updateSolfegeColors(); });
+    mq.addEventListener("change", () => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); });
 
-    // Update colors after key change
+    // Update colors and names after key change
     updateSolfegeColors();
+    updateBoxNames();
   </script>
 </body>
 </html>
