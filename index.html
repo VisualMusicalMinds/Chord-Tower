@@ -462,6 +462,86 @@
       noteButtonRefs[btn.key] = div;
     });
 
+    // --- KEYBOARD BINDINGS: Reactivated ---
+    // Map physical keyboard keys to chord keys
+    // (e.g. '8' key for V/V, '9' for V/vi, 'u', 'i', 'o', 'l', 'k', 'j', 'n')
+    // Modifier: Shift = sharp, Alt or Control = flat (standard for web)
+    const keyMap = {
+      "8": "8",
+      "9": "9",
+      "u": "u",
+      "i": "i",
+      "o": "o",
+      "l": "l",
+      "k": "k",
+      "j": "j",
+      "n": "n"
+    };
+    // Track which keys are held so we don't retrigger
+    const keyHeldDown = {};
+
+    window.addEventListener('keydown', function(e) {
+      // If focus is in an input, don't interfere
+      if (document.activeElement && (
+          document.activeElement.tagName === "INPUT" ||
+          document.activeElement.tagName === "TEXTAREA" ||
+          document.activeElement.isContentEditable)) {
+        return;
+      }
+      let key = e.key;
+      if (keyMap[key] && !keyHeldDown[key]) {
+        // Handle accidental: shift for sharp, alt/ctrl for flat
+        let prevSharp = sharpTouchHeld, prevFlat = flatTouchHeld;
+        sharpTouchHeld = e.shiftKey;
+        flatTouchHeld = e.altKey || e.ctrlKey;
+        keyHeldDown[key] = true;
+        handlePlayKey(keyMap[key]);
+        // Restore accidental state in case user presses another key without modifier
+        sharpTouchHeld = prevSharp;
+        flatTouchHeld = prevFlat;
+        // Add active style
+        if (keyToDiv[key]) keyToDiv[key].classList.add('active');
+      }
+      // Accidental-only presses
+      if (key === "#" || key === "ArrowUp") {
+        accidentalHeld.sharp = true;
+        sharpTouchHeld = true;
+        reTriggerHeldKeysAccidentals();
+      }
+      if (key === "b" || key === "ArrowDown") {
+        accidentalHeld.flat = true;
+        flatTouchHeld = true;
+        reTriggerHeldKeysAccidentals();
+      }
+      // C/I toggle by pressing 'c' or 'C'
+      if (key === "c" || key === "C") {
+        cButtonState = (cButtonState === 'C') ? 'I' : 'C';
+        renderToggleButton();
+        updateBoxNames();
+      }
+    });
+
+    window.addEventListener('keyup', function(e) {
+      let key = e.key;
+      if (keyMap[key]) {
+        handleStopKey(keyMap[key]);
+        keyHeldDown[key] = false;
+        // Remove active style
+        if (keyToDiv[key]) keyToDiv[key].classList.remove('active');
+      }
+      // Accidental-only releases
+      if (key === "#" || key === "ArrowUp") {
+        accidentalHeld.sharp = false;
+        sharpTouchHeld = false;
+        reTriggerHeldKeysAccidentals();
+      }
+      if (key === "b" || key === "ArrowDown") {
+        accidentalHeld.flat = false;
+        flatTouchHeld = false;
+        reTriggerHeldKeysAccidentals();
+      }
+    });
+
     // --- CONTROLS BAR (unchanged) ---
     const controlsBar = document.getElementById('controls-bar');
     const keyButton = document.createElement('div');
