@@ -35,6 +35,7 @@
     };
     let noteFrequencies = { ...baseFrequencies };
 
+    // G now transposes UP a perfect 5th (+7), not down a perfect 4th (-5)
     const semitoneShiftMap = {'C':0,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'Gb':6,'G':7,'Ab':-4,'A':-3,'Bb':-2,'B':-1};
     function transposeFrequency(freq, semitoneShift) {
       return freq * Math.pow(2, semitoneShift / 12);
@@ -47,6 +48,8 @@
       }
     }
 
+    // Color mapping for each key, IV/IV always matches B box of original system.
+    // V/V always matches ii, V/vi always matches iii.
     const noteColorsByKey = {
       'C':   { 'I': '#FF3B30',    'ii': '#FF9500', 'iii': '#FFCC00', 'IV': '#34C759', 'V': '#5af5fa', 'vi': '#007AFF', 'IV/IV': '#AF52DE' },
       'Db':  { 'I': '#FF9500',    'ii': '#FFCC00', 'iii': '#34C759', 'IV': '#5af5fa', 'V': '#007AFF', 'vi': '#AF52DE', 'IV/IV': '#FF3B30' },
@@ -62,6 +65,7 @@
       'B':   { 'I': '#AF52DE',    'ii': '#FF3B30', 'iii': '#FF9500', 'IV': '#FFCC00', 'V': '#34C759', 'vi': '#5af5fa', 'IV/IV': '#007AFF' }
     };
 
+    // --- Chord/Alt names for all keys ---
     const chordNamesDefault = {
       "8": "V/V",
       "9": "V/vi",
@@ -73,6 +77,7 @@
       "j": "I",
       "n": "IV/IV"
     };
+    // Order: V/V, V/vi, IV, V, vi, iii, ii, I, IV/IV
     const chordNamesAltByKey = {
       "C":  ["D",   "E",   "F",  "G",  "Am",  "Em",  "Dm",  "C",  "Bb"],
       "Db": ["Eb",  "F",   "Gb", "Ab", "Bbm", "Fm",  "Ebm", "Db", "Cb"],
@@ -100,7 +105,6 @@
     const customVoiceWave = context.createPeriodicWave(real, imag);
 
     const activeOscillators = {};
-    const noteStartTimes = {}; // <-- NEW: for minimum note time
     const heldKeys = new Set();
     const accidentalHeld = { sharp: false, flat: false };
     const heldNoteKeys = new Set();
@@ -118,7 +122,6 @@
     }
 
     function startNote(key, freqOrFreqs) {
-      noteStartTimes[key] = context.currentTime; // <-- NEW: record start time
       stopNote(key);
       let oscList = [];
       let gainList = [];
@@ -173,7 +176,7 @@
           osc.connect(filter);
           filter.connect(gain);
           gain.connect(context.destination);
-          gain.gain.setValueAtTime(globalVolume / freqs.length, context.currentTime);
+          gain.gain.setValueAtTime(globalVolume / freqs.length, context.currentTime); // scale volume for chords
           osc.start();
           oscList.push(osc);
           gainList.push(gain);
@@ -187,34 +190,27 @@
       const active = activeOscillators[key];
       if (!active) return;
       const now = context.currentTime;
-      const minNoteTime = 0.04; // 40ms minimum
-      const startedAt = noteStartTimes[key] || now;
-      let stopAt = now;
-      if (now - startedAt < minNoteTime) {
-        stopAt = startedAt + minNoteTime;
-      }
       if (active.oscList) {
         active.oscList.forEach((osc, i) => {
           const gain = active.gainList[i];
           if (currentWaveform === "voice") {
-            gain.gain.cancelScheduledValues(stopAt);
-            gain.gain.setValueAtTime(gain.gain.value, stopAt);
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(gain.gain.value, now);
             const releaseTime = 0.6;
             const stopBuffer = 0.1;
-            gain.gain.linearRampToValueAtTime(0.0001, stopAt + releaseTime);
-            osc.stop(stopAt + releaseTime + stopBuffer);
-            if (active.lfoList[i]) active.lfoList[i].stop(stopAt + releaseTime + stopBuffer);
+            gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
+            osc.stop(now + releaseTime + stopBuffer);
+            if (active.lfoList[i]) active.lfoList[i].stop(now + releaseTime + stopBuffer);
           } else {
-            gain.gain.cancelScheduledValues(stopAt);
-            gain.gain.setValueAtTime(gain.gain.value, stopAt);
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(gain.gain.value, now);
             const releaseTime = 1.2;
             const stopBuffer = 0.1;
-            gain.gain.exponentialRampToValueAtTime(0.001, stopAt + releaseTime);
-            osc.stop(stopAt + releaseTime + stopBuffer);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
+            osc.stop(now + releaseTime + stopBuffer);
           }
         });
       }
-      delete noteStartTimes[key];
       delete activeOscillators[key];
     }
 
@@ -274,11 +270,14 @@
       '9b': [8, 1], '9c': [8, 2],
       '4d': [3, 3], '3d': [2, 3],
       '2a': [1, 0], '2b': [1, 1], '2c': [1, 2], '2d': [1, 3],
+      // cells d for 5,6,7 for easier placement
       '5d': [4, 3], '6d': [5, 3], '7d': [6, 3]
     };
 
     const gridRows = 10;
 
+    // --- BUTTONS: keep a reference to each note-button div for updating their text ---
+    // CHANGED: notes for n (IV/IV)
     const buttons = [
       { name: 'V/V', key: '8', notes: ['D4', 'F#4', 'A4', 'D5'], cells: ['2a', '2b'] },
       { name: 'V/vi', key: '9', notes: ['G#3', 'E4', 'B4', 'E5'], cells: ['2c','2d'] },
@@ -300,12 +299,15 @@
       buttons.forEach(btn => {
         const div = keyToDiv[btn.key];
         if (div) {
+          // V/V should always match ii
           if (btn.name === "V/V") {
             div.style.backgroundColor = bgColors['ii'] || "#FF9500";
           }
+          // V/vi should always match iii
           else if (btn.name === "V/vi") {
             div.style.backgroundColor = bgColors['iii'] || "#FFCC00";
           }
+          // IV/IV is special, always matches B color from original system (already set in bgColors['IV/IV'])
           else if (btn.name === "IV/IV") {
             div.style.backgroundColor = bgColors['IV/IV'] || "#AF52DE";
           }
@@ -325,20 +327,25 @@
         div.style.left = (c * (100 / 4)) + '%';
         div.style.width = (100 / 4 - 0.5) + '%';
         div.style.height = (100 / 11 - 0.5) + '%';
-        const rowNum = r + 1;
+        const rowNum = r + 1; // r=1 -> rowNum=2, up to r=10->rowNum=11
         const colLetter = String.fromCharCode(97 + c);
         cellRefs[`${rowNum}${colLetter}`] = div;
         grid.appendChild(div);
       }
     }
 
+    // --- Remove images in 6d and 7d, and use 5d for toggle button, 6d and 7d blank ---
+    // CHANGED: toggle to cell 5d instead of 6d
     cellRefs['5d'].classList.add('toggle-cell-border');
-    cellRefs['6d'].classList.remove('toggle-cell-border');
+    cellRefs['6d'].classList.remove('toggle-cell-border'); // just in case
 
-    let cButtonState = 'C';
+    // State for the C/I button
+    let cButtonState = 'C'; // can be 'C' or 'I'
 
-    const noteButtonRefs = {};
+    // For updating chord box names
+    const noteButtonRefs = {}; // key -> div
 
+    // Helper: update box names based on toggle and key
     function updateBoxNames() {
       const currentKey = keyNames[currentKeyIndex];
       const useAlt = (cButtonState === 'I');
@@ -364,7 +371,7 @@
       el.setAttribute('aria-pressed', cButtonState === 'I');
       el.style.fontFamily = "'EB Garamond', Garamond, 'Times New Roman', Times, serif";
       el.style.fontWeight = "bold";
-      el.style.fontSize = "2em";
+      el.style.fontSize = "2em"; // About 10% smaller than before
       el.style.background = "transparent";
       el.style.border = "none";
       el.style.color = "#222";
@@ -380,6 +387,7 @@
         renderToggleButton();
         updateBoxNames();
       });
+      // For accessibility, toggle on space/enter
       el.addEventListener('keydown', (e) => {
         if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
@@ -388,11 +396,13 @@
           updateBoxNames();
         }
       });
+      // Clear old content and insert
       cellRefs['5d'].innerHTML = '';
       cellRefs['5d'].appendChild(el);
     }
     renderToggleButton();
 
+    // CHANGED: clear the old cellRefs['6d'] and cellRefs['7d']
     cellRefs['6d'].innerHTML = '';
     cellRefs['7d'].innerHTML = '';
 
@@ -412,90 +422,50 @@
       div.style.left = `${left}%`;
       div.style.height = `${height}%`;
       div.style.width = `${width}%`;
-
-      // --- Mouse events: unchanged ---
+      let isTouching = false;
       div.addEventListener('mousedown', (e) => {
         e.preventDefault();
+        isTouching = true;
         handlePlayKey(btn.key);
         div.classList.add('active');
         window.focus();
       });
       div.addEventListener('mouseup', () => {
+        isTouching = false;
         handleStopKey(btn.key);
         div.classList.remove('active');
       });
       div.addEventListener('mouseleave', () => {
+        isTouching = false;
         handleStopKey(btn.key);
         div.classList.remove('active');
       });
-
-      // --- Robust Touch events: per-touch tracking, no pops/double triggers ---
-      div._activeTouches = {};
-
       div.addEventListener('touchstart', (e) => {
-        let wasActive = Object.keys(div._activeTouches).length > 0;
-        for (let i = 0; i < e.changedTouches.length; i++) {
-          const touch = e.changedTouches[i];
-          div._activeTouches[touch.identifier] = true;
-        }
-        if (!wasActive && Object.keys(div._activeTouches).length > 0) {
-          handlePlayKey(btn.key);
-          div.classList.add('active');
-        }
+        e.preventDefault();
+        isTouching = true;
+        handlePlayKey(btn.key);
+        div.classList.add('active');
         window.focus();
       });
-
-      div.addEventListener('touchend', (e) => {
-        let wasActive = Object.keys(div._activeTouches).length > 0;
-        for (let i = 0; i < e.changedTouches.length; i++) {
-          const touch = e.changedTouches[i];
-          delete div._activeTouches[touch.identifier];
-        }
-        if (wasActive && Object.keys(div._activeTouches).length === 0) {
-          handleStopKey(btn.key);
-          div.classList.remove('active');
-        }
+      div.addEventListener('touchend', () => {
+        isTouching = false;
+        handleStopKey(btn.key);
+        div.classList.remove('active');
       });
-
-      div.addEventListener('touchcancel', (e) => {
-        let wasActive = Object.keys(div._activeTouches).length > 0;
-        for (let i = 0; i < e.changedTouches.length; i++) {
-          const touch = e.changedTouches[i];
-          delete div._activeTouches[touch.identifier];
-        }
-        if (wasActive && Object.keys(div._activeTouches).length === 0) {
-          handleStopKey(btn.key);
-          div.classList.remove('active');
-        }
+      div.addEventListener('touchcancel', () => {
+        isTouching = false;
+        handleStopKey(btn.key);
+        div.classList.remove('active');
       });
-
-      div.addEventListener('touchmove', (e) => {
-        const rect = div.getBoundingClientRect();
-        let wasActive = Object.keys(div._activeTouches).length > 0;
-        for (let i = 0; i < e.changedTouches.length; i++) {
-          const touch = e.changedTouches[i];
-          const x = touch.clientX, y = touch.clientY;
-          if (div._activeTouches[touch.identifier]) {
-            if (
-              x < rect.left || x > rect.right ||
-              y < rect.top || y > rect.bottom
-            ) {
-              delete div._activeTouches[touch.identifier];
-            }
-          }
-        }
-        if (wasActive && Object.keys(div._activeTouches).length === 0) {
-          handleStopKey(btn.key);
-          div.classList.remove('active');
-        }
-      }, {passive: false});
-
       grid.appendChild(div);
       keyToDiv[btn.key] = div;
       noteButtonRefs[btn.key] = div;
     });
 
     // --- KEYBOARD BINDINGS: Reactivated ---
+    // Map physical keyboard keys to chord keys
+    // (e.g. '8' key for V/V, '9' for V/vi, 'u', 'i', 'o', 'l', 'k', 'j', 'n')
+    // Modifier: Shift = sharp, Alt or Control = flat (standard for web)
     const keyMap = {
       "8": "8",
       "9": "9",
@@ -507,9 +477,11 @@
       "j": "j",
       "n": "n"
     };
+    // Track which keys are held so we don't retrigger
     const keyHeldDown = {};
 
     window.addEventListener('keydown', function(e) {
+      // If focus is in an input, don't interfere
       if (document.activeElement && (
           document.activeElement.tagName === "INPUT" ||
           document.activeElement.tagName === "TEXTAREA" ||
@@ -518,15 +490,19 @@
       }
       let key = e.key;
       if (keyMap[key] && !keyHeldDown[key]) {
+        // Handle accidental: shift for sharp, alt/ctrl for flat
         let prevSharp = sharpTouchHeld, prevFlat = flatTouchHeld;
         sharpTouchHeld = e.shiftKey;
         flatTouchHeld = e.altKey || e.ctrlKey;
         keyHeldDown[key] = true;
         handlePlayKey(keyMap[key]);
+        // Restore accidental state in case user presses another key without modifier
         sharpTouchHeld = prevSharp;
         flatTouchHeld = prevFlat;
+        // Add active style
         if (keyToDiv[key]) keyToDiv[key].classList.add('active');
       }
+      // Accidental-only presses
       if (key === "#" || key === "ArrowUp") {
         accidentalHeld.sharp = true;
         sharpTouchHeld = true;
@@ -537,6 +513,7 @@
         flatTouchHeld = true;
         reTriggerHeldKeysAccidentals();
       }
+      // C/I toggle by pressing 'c' or 'C'
       if (key === "c" || key === "C") {
         cButtonState = (cButtonState === 'C') ? 'I' : 'C';
         renderToggleButton();
@@ -549,8 +526,10 @@
       if (keyMap[key]) {
         handleStopKey(keyMap[key]);
         keyHeldDown[key] = false;
+        // Remove active style
         if (keyToDiv[key]) keyToDiv[key].classList.remove('active');
       }
+      // Accidental-only releases
       if (key === "#" || key === "ArrowUp") {
         accidentalHeld.sharp = false;
         sharpTouchHeld = false;
@@ -621,6 +600,7 @@
       volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
     });
 
+    // --- Resize logic (unchanged, but also call updateBoxNames) ---
     function resizeGrid() {
       const gridEl = document.getElementById('grid');
       const gridWrapper = document.querySelector('.proportional-grid-wrapper');
@@ -648,6 +628,7 @@
       gridEl.querySelectorAll('.cell').forEach(div=>{
         div.style.fontSize = fontSize + 'px';
       });
+      // Also resize the C/I button if it exists
       const toggleBtn = cellRefs['5d'].querySelector('.chord-toggle-btn');
       if (toggleBtn) toggleBtn.style.fontSize = Math.max(fontSize * 1.1, 20) + 'px';
     }
@@ -657,6 +638,7 @@
     const mq = window.matchMedia("(max-width: 550px)");
     mq.addEventListener("change", () => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); });
 
+    // Update colors and names after key change
     updateSolfegeColors();
     updateBoxNames();
   </script>
