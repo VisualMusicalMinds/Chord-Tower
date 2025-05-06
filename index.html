@@ -35,8 +35,11 @@
     let currentWaveform = waveforms[currentWaveformIndex];
     let globalVolume = 0.4;
     
-    // Add touch tolerance variable
-    let touchLeaveTimeout = null;
+    // Track timeouts per button instead of globally
+    const touchLeaveTimeouts = {};
+    
+    // Add a safety mechanism to catch stuck notes
+    let noteTimeouts = {};
 
     const keyNames = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
     let currentKeyIndex = 0;
@@ -144,6 +147,14 @@
       let freqs = Array.isArray(freqOrFreqs) ? freqOrFreqs : [freqOrFreqs];
       const now = context.currentTime;
       
+      // Set a safety timeout to ensure this note stops even if events get messed up
+      if (noteTimeouts[key]) clearTimeout(noteTimeouts[key]);
+      noteTimeouts[key] = setTimeout(() => {
+        if (activeOscillators[key]) {
+          stopNote(key);
+        }
+      }, 10000); // Ensure note doesn't play for more than 10 seconds
+      
       freqs.forEach((freq, i) => {
         let osc, gain, lfo, lfoGain, filter;
         gain = context.createGain();
@@ -218,28 +229,38 @@
       if (!active) return;
       const now = context.currentTime;
       
+      // Clear any pending safety timeouts
+      if (noteTimeouts[key]) {
+        clearTimeout(noteTimeouts[key]);
+        delete noteTimeouts[key];
+      }
+      
       // Don't immediately delete the oscillators - let the scheduled fade complete
       if (active.oscList) {
         active.oscList.forEach((osc, i) => {
-          const gain = active.gainList[i];
-          if (currentWaveform === "voice") {
-            gain.gain.cancelScheduledValues(now);
-            gain.gain.setValueAtTime(gain.gain.value || 0.001, now); // Ensure we have a valid starting value
-            const releaseTime = 0.6;
-            const stopBuffer = 0.1;
-            // Use linearRamp for more consistent releases
-            gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
-            osc.stop(now + releaseTime + stopBuffer);
-            if (active.lfoList[i]) active.lfoList[i].stop(now + releaseTime + stopBuffer);
-          } else {
-            gain.gain.cancelScheduledValues(now);
-            gain.gain.setValueAtTime(gain.gain.value || 0.001, now); // Ensure we have a valid starting value
-            // Use shorter release for better touch responsiveness but still prevent pops
-            const releaseTime = 0.08; // 80ms release is long enough to avoid pops but short enough to feel responsive
-            const stopBuffer = 0.02;
-            // Use linearRamp instead of exponential for more predictable behavior at low volumes
-            gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
-            osc.stop(now + releaseTime + stopBuffer);
+          try {
+            const gain = active.gainList[i];
+            if (currentWaveform === "voice") {
+              gain.gain.cancelScheduledValues(now);
+              gain.gain.setValueAtTime(gain.gain.value || 0.001, now); // Ensure we have a valid starting value
+              const releaseTime = 0.6;
+              const stopBuffer = 0.1;
+              // Use linearRamp for more consistent releases
+              gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
+              osc.stop(now + releaseTime + stopBuffer);
+              if (active.lfoList[i]) active.lfoList[i].stop(now + releaseTime + stopBuffer);
+            } else {
+              gain.gain.cancelScheduledValues(now);
+              gain.gain.setValueAtTime(gain.gain.value || 0.001, now); // Ensure we have a valid starting value
+              // Use shorter release for better touch responsiveness but still prevent pops
+              const releaseTime = 0.08; // 80ms release is long enough to avoid pops but short enough to feel responsive
+              const stopBuffer = 0.02;
+              // Use linearRamp instead of exponential for more predictable behavior at low volumes
+              gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
+              osc.stop(now + releaseTime + stopBuffer);
+            }
+          } catch (e) {
+            console.warn("Error stopping note:", e);
           }
         });
         
@@ -270,9 +291,20 @@
 
     function handleStopKey(key) {
       heldNoteKeys.delete(key);
+      // Ensure all variations of the key are stopped
       stopNote(`${key}_0`);
       stopNote(`${key}_1`);
       stopNote(`${key}_-1`);
+    }
+
+    // Add a reset function to stop all sounds in case of stuck notes
+    function stopAllSounds() {
+      for (const key in activeOscillators) {
+        if (activeOscillators.hasOwnProperty(key)) {
+          stopNote(key);
+        }
+      }
+      heldNoteKeys.clear();
     }
 
     function reTriggerHeldKeysAccidentals() {
@@ -460,6 +492,38 @@
       div.style.width = `${width}%`;
       let isTouching = false;
       
+      // Track the last touch/interaction time for this button
+      let lastInteractionTime = 0;
+      
+      function scheduleNoteStop(key) {
+        // Store the current time to detect double taps
+        const now = Date.now();
+        
+        // If this is a double-tap (less than 300ms between interactions),
+        // make sure we still stop the previous note
+        if (now - lastInteractionTime < 300) {
+          // Force immediate stop on double-tap to prevent stuck notes
+          handleStopKey(key);
+          div.classList.remove('active');
+          return;
+        }
+        
+        lastInteractionTime = now;
+        
+        // Clear any existing timeout for this specific button
+        if (touchLeaveTimeouts[key]) {
+          clearTimeout(touchLeaveTimeouts[key]);
+        }
+        
+        // Set a new timeout for this button
+        touchLeaveTimeouts[key] = setTimeout(() => {
+          isTouching = false;
+          handleStopKey(key);
+          div.classList.remove('active');
+          delete touchLeaveTimeouts[key];
+        }, 30);
+      }
+      
       div.addEventListener('mousedown', (e) => {
         e.preventDefault();
         isTouching = true;
@@ -469,24 +533,12 @@
       });
       
       div.addEventListener('mouseup', () => {
-        if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout);
-        touchLeaveTimeout = setTimeout(() => {
-          isTouching = false;
-          handleStopKey(btn.key);
-          div.classList.remove('active');
-          touchLeaveTimeout = null;
-        }, 30); // Slightly longer delay for mouse to feel natural
+        scheduleNoteStop(btn.key);
       });
       
       div.addEventListener('mouseleave', () => {
         if (isTouching) {
-          if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout);
-          touchLeaveTimeout = setTimeout(() => {
-            isTouching = false;
-            handleStopKey(btn.key);
-            div.classList.remove('active');
-            touchLeaveTimeout = null;
-          }, 30);
+          scheduleNoteStop(btn.key);
         }
       });
       
@@ -499,29 +551,21 @@
       });
       
       div.addEventListener('touchend', () => {
-        // Add touch tolerance to prevent rapid on/off toggling at edges
-        if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout);
-        touchLeaveTimeout = setTimeout(() => {
-          isTouching = false;
-          handleStopKey(btn.key);
-          div.classList.remove('active');
-          touchLeaveTimeout = null;
-        }, 30); // 30ms delay before stopping sound (increased from 20ms)
+        scheduleNoteStop(btn.key);
       });
       
       div.addEventListener('touchcancel', () => {
-        if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout);
-        touchLeaveTimeout = setTimeout(() => {
-          isTouching = false;
-          handleStopKey(btn.key);
-          div.classList.remove('active');
-          touchLeaveTimeout = null;
-        }, 30);
+        scheduleNoteStop(btn.key);
       });
       
       grid.appendChild(div);
       keyToDiv[btn.key] = div;
       noteButtonRefs[btn.key] = div;
+    });
+
+    // Add double-tap reset functionality to the grid
+    grid.addEventListener('dblclick', function() {
+      stopAllSounds();
     });
 
     // --- KEYBOARD BINDINGS: Reactivated ---
@@ -542,7 +586,13 @@
     // Track which keys are held so we don't retrigger
     const keyHeldDown = {};
 
+    // Add escape key to stop all sounds
     window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        stopAllSounds();
+        return;
+      }
+      
       // If focus is in an input, don't interfere
       if (document.activeElement && (
           document.activeElement.tagName === "INPUT" ||
@@ -706,6 +756,13 @@
     // Update colors and names after key change
     updateSolfegeColors();
     updateBoxNames();
+    
+    // Check for and stop any stuck notes on page visibility change
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        stopAllSounds();
+      }
+    });
   </script>
 </body>
 </html>
