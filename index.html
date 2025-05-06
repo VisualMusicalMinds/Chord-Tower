@@ -423,6 +423,8 @@
       div.style.height = `${height}%`;
       div.style.width = `${width}%`;
       let isTouching = false;
+
+      // --- Mouse events: unchanged ---
       div.addEventListener('mousedown', (e) => {
         e.preventDefault();
         isTouching = true;
@@ -440,6 +442,8 @@
         handleStopKey(btn.key);
         div.classList.remove('active');
       });
+
+      // --- Robust Touch events ---
       div.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isTouching = true;
@@ -447,20 +451,25 @@
         div.classList.add('active');
         window.focus();
       });
-      div.addEventListener('touchend', () => {
-        isTouching = false;
-        handleStopKey(btn.key);
-        div.classList.remove('active');
-      });
-      div.addEventListener('touchcancel', () => {
-        isTouching = false;
-        handleStopKey(btn.key);
-        div.classList.remove('active');
-      });
+      // Don't handle touchend/touchcancel per button. Allow global handler to manage all stops.
+      // This prevents stuck notes when touch leaves the screen.
+
       grid.appendChild(div);
       keyToDiv[btn.key] = div;
       noteButtonRefs[btn.key] = div;
     });
+
+    // --- GLOBAL Robust Touch Note Release ---
+    // On any 'touchend' or 'touchcancel', stop all held notes.
+    // This ensures notes are always released, even if touch leaves element, or on multi-touch screens.
+    function stopAllNotesAndButtons() {
+      // Stop all notes
+      heldNoteKeys.forEach(key => handleStopKey(key));
+      // Remove 'active' class from all note buttons
+      Object.values(noteButtonRefs).forEach(div => div.classList.remove('active'));
+    }
+    window.addEventListener('touchend', stopAllNotesAndButtons);
+    window.addEventListener('touchcancel', stopAllNotesAndButtons);
 
     // --- KEYBOARD BINDINGS: Reactivated ---
     // Map physical keyboard keys to chord keys
