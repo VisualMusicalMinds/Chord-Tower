@@ -420,47 +420,49 @@
         div.classList.remove('active');
       });
 
-      // --- Robust Touch events: per-touch tracking ---
+      // --- Robust Touch events: per-touch tracking, no pops/double triggers ---
       div._activeTouches = {};
 
       div.addEventListener('touchstart', (e) => {
+        let wasActive = Object.keys(div._activeTouches).length > 0;
         for (let i = 0; i < e.changedTouches.length; i++) {
           const touch = e.changedTouches[i];
           div._activeTouches[touch.identifier] = true;
-          handlePlayKey(btn.key);
         }
-        div.classList.add('active');
+        if (!wasActive && Object.keys(div._activeTouches).length > 0) {
+          handlePlayKey(btn.key);
+          div.classList.add('active');
+        }
         window.focus();
       });
 
       div.addEventListener('touchend', (e) => {
+        let wasActive = Object.keys(div._activeTouches).length > 0;
         for (let i = 0; i < e.changedTouches.length; i++) {
           const touch = e.changedTouches[i];
-          if (div._activeTouches[touch.identifier]) {
-            delete div._activeTouches[touch.identifier];
-            handleStopKey(btn.key);
-          }
+          delete div._activeTouches[touch.identifier];
         }
-        if (Object.keys(div._activeTouches).length === 0) {
+        if (wasActive && Object.keys(div._activeTouches).length === 0) {
+          handleStopKey(btn.key);
           div.classList.remove('active');
         }
       });
 
       div.addEventListener('touchcancel', (e) => {
+        let wasActive = Object.keys(div._activeTouches).length > 0;
         for (let i = 0; i < e.changedTouches.length; i++) {
           const touch = e.changedTouches[i];
-          if (div._activeTouches[touch.identifier]) {
-            delete div._activeTouches[touch.identifier];
-            handleStopKey(btn.key);
-          }
+          delete div._activeTouches[touch.identifier];
         }
-        if (Object.keys(div._activeTouches).length === 0) {
+        if (wasActive && Object.keys(div._activeTouches).length === 0) {
+          handleStopKey(btn.key);
           div.classList.remove('active');
         }
       });
 
       div.addEventListener('touchmove', (e) => {
         const rect = div.getBoundingClientRect();
+        let wasActive = Object.keys(div._activeTouches).length > 0;
         for (let i = 0; i < e.changedTouches.length; i++) {
           const touch = e.changedTouches[i];
           const x = touch.clientX, y = touch.clientY;
@@ -470,11 +472,11 @@
               y < rect.top || y > rect.bottom
             ) {
               delete div._activeTouches[touch.identifier];
-              handleStopKey(btn.key);
             }
           }
         }
-        if (Object.keys(div._activeTouches).length === 0) {
+        if (wasActive && Object.keys(div._activeTouches).length === 0) {
+          handleStopKey(btn.key);
           div.classList.remove('active');
         }
       }, {passive: false});
