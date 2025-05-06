@@ -111,6 +111,9 @@
     let sharpTouchHeld = false;
     let flatTouchHeld = false;
 
+    // --- Track active touch keys globally ---
+    const activeTouchKeys = new Set();
+
     function getAccidentalShift() {
       if (sharpTouchHeld && flatTouchHeld) return 0;
       if (sharpTouchHeld) return 1;
@@ -446,20 +449,39 @@
         handlePlayKey(btn.key);
         div.classList.add('active');
         window.focus();
+        activeTouchKeys.add(btn.key); // Track this key as active by touch
       });
       div.addEventListener('touchend', () => {
         isTouching = false;
         handleStopKey(btn.key);
         div.classList.remove('active');
+        activeTouchKeys.delete(btn.key);
       });
       div.addEventListener('touchcancel', () => {
         isTouching = false;
         handleStopKey(btn.key);
         div.classList.remove('active');
+        activeTouchKeys.delete(btn.key);
       });
       grid.appendChild(div);
       keyToDiv[btn.key] = div;
       noteButtonRefs[btn.key] = div;
+    });
+
+    // --- GLOBAL touchend/touchcancel for stuck notes on touch screens ---
+    window.addEventListener('touchend', function(e) {
+      for (const key of activeTouchKeys) {
+        handleStopKey(key);
+        if (keyToDiv[key]) keyToDiv[key].classList.remove('active');
+      }
+      activeTouchKeys.clear();
+    });
+    window.addEventListener('touchcancel', function(e) {
+      for (const key of activeTouchKeys) {
+        handleStopKey(key);
+        if (keyToDiv[key]) keyToDiv[key].classList.remove('active');
+      }
+      activeTouchKeys.clear();
     });
 
     // --- KEYBOARD BINDINGS: Reactivated ---
