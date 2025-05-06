@@ -100,6 +100,7 @@
     const customVoiceWave = context.createPeriodicWave(real, imag);
 
     const activeOscillators = {};
+    const noteStartTimes = {}; // <-- NEW: for minimum note time
     const heldKeys = new Set();
     const accidentalHeld = { sharp: false, flat: false };
     const heldNoteKeys = new Set();
@@ -117,6 +118,7 @@
     }
 
     function startNote(key, freqOrFreqs) {
+      noteStartTimes[key] = context.currentTime; // <-- NEW: record start time
       stopNote(key);
       let oscList = [];
       let gainList = [];
@@ -171,7 +173,7 @@
           osc.connect(filter);
           filter.connect(gain);
           gain.connect(context.destination);
-          gain.gain.setValueAtTime(globalVolume / freqs.length, context.currentTime); // scale volume for chords
+          gain.gain.setValueAtTime(globalVolume / freqs.length, context.currentTime);
           osc.start();
           oscList.push(osc);
           gainList.push(gain);
@@ -185,27 +187,34 @@
       const active = activeOscillators[key];
       if (!active) return;
       const now = context.currentTime;
+      const minNoteTime = 0.04; // 40ms minimum
+      const startedAt = noteStartTimes[key] || now;
+      let stopAt = now;
+      if (now - startedAt < minNoteTime) {
+        stopAt = startedAt + minNoteTime;
+      }
       if (active.oscList) {
         active.oscList.forEach((osc, i) => {
           const gain = active.gainList[i];
           if (currentWaveform === "voice") {
-            gain.gain.cancelScheduledValues(now);
-            gain.gain.setValueAtTime(gain.gain.value, now);
+            gain.gain.cancelScheduledValues(stopAt);
+            gain.gain.setValueAtTime(gain.gain.value, stopAt);
             const releaseTime = 0.6;
             const stopBuffer = 0.1;
-            gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
-            osc.stop(now + releaseTime + stopBuffer);
-            if (active.lfoList[i]) active.lfoList[i].stop(now + releaseTime + stopBuffer);
+            gain.gain.linearRampToValueAtTime(0.0001, stopAt + releaseTime);
+            osc.stop(stopAt + releaseTime + stopBuffer);
+            if (active.lfoList[i]) active.lfoList[i].stop(stopAt + releaseTime + stopBuffer);
           } else {
-            gain.gain.cancelScheduledValues(now);
-            gain.gain.setValueAtTime(gain.gain.value, now);
+            gain.gain.cancelScheduledValues(stopAt);
+            gain.gain.setValueAtTime(gain.gain.value, stopAt);
             const releaseTime = 1.2;
             const stopBuffer = 0.1;
-            gain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
-            osc.stop(now + releaseTime + stopBuffer);
+            gain.gain.exponentialRampToValueAtTime(0.001, stopAt + releaseTime);
+            osc.stop(stopAt + releaseTime + stopBuffer);
           }
         });
       }
+      delete noteStartTimes[key];
       delete activeOscillators[key];
     }
 
