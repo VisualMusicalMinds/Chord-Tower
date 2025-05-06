@@ -217,28 +217,37 @@
       const active = activeOscillators[key];
       if (!active) return;
       const now = context.currentTime;
+      
+      // Don't immediately delete the oscillators - let the scheduled fade complete
       if (active.oscList) {
         active.oscList.forEach((osc, i) => {
           const gain = active.gainList[i];
           if (currentWaveform === "voice") {
             gain.gain.cancelScheduledValues(now);
-            gain.gain.setValueAtTime(gain.gain.value, now);
+            gain.gain.setValueAtTime(gain.gain.value || 0.001, now); // Ensure we have a valid starting value
             const releaseTime = 0.6;
             const stopBuffer = 0.1;
+            // Use linearRamp for more consistent releases
             gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
             osc.stop(now + releaseTime + stopBuffer);
             if (active.lfoList[i]) active.lfoList[i].stop(now + releaseTime + stopBuffer);
           } else {
             gain.gain.cancelScheduledValues(now);
-            gain.gain.setValueAtTime(gain.gain.value, now);
-            const releaseTime = 1.2;
-            const stopBuffer = 0.1;
-            gain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
+            gain.gain.setValueAtTime(gain.gain.value || 0.001, now); // Ensure we have a valid starting value
+            // Use shorter release for better touch responsiveness but still prevent pops
+            const releaseTime = 0.08; // 80ms release is long enough to avoid pops but short enough to feel responsive
+            const stopBuffer = 0.02;
+            // Use linearRamp instead of exponential for more predictable behavior at low volumes
+            gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
             osc.stop(now + releaseTime + stopBuffer);
           }
         });
+        
+        // Mark this key for cleanup after the release completes
+        setTimeout(() => {
+          delete activeOscillators[key];
+        }, 1000); // Safely clean up after all releases should be complete
       }
-      delete activeOscillators[key];
     }
 
     function handlePlayKey(key) {
@@ -450,6 +459,7 @@
       div.style.height = `${height}%`;
       div.style.width = `${width}%`;
       let isTouching = false;
+      
       div.addEventListener('mousedown', (e) => {
         e.preventDefault();
         isTouching = true;
@@ -457,16 +467,29 @@
         div.classList.add('active');
         window.focus();
       });
+      
       div.addEventListener('mouseup', () => {
-        isTouching = false;
-        handleStopKey(btn.key);
-        div.classList.remove('active');
+        if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout);
+        touchLeaveTimeout = setTimeout(() => {
+          isTouching = false;
+          handleStopKey(btn.key);
+          div.classList.remove('active');
+          touchLeaveTimeout = null;
+        }, 30); // Slightly longer delay for mouse to feel natural
       });
+      
       div.addEventListener('mouseleave', () => {
-        isTouching = false;
-        handleStopKey(btn.key);
-        div.classList.remove('active');
+        if (isTouching) {
+          if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout);
+          touchLeaveTimeout = setTimeout(() => {
+            isTouching = false;
+            handleStopKey(btn.key);
+            div.classList.remove('active');
+            touchLeaveTimeout = null;
+          }, 30);
+        }
       });
+      
       div.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isTouching = true;
@@ -474,6 +497,7 @@
         div.classList.add('active');
         window.focus();
       });
+      
       div.addEventListener('touchend', () => {
         // Add touch tolerance to prevent rapid on/off toggling at edges
         if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout);
@@ -482,8 +506,9 @@
           handleStopKey(btn.key);
           div.classList.remove('active');
           touchLeaveTimeout = null;
-        }, 20); // 20ms delay before stopping sound
+        }, 30); // 30ms delay before stopping sound (increased from 20ms)
       });
+      
       div.addEventListener('touchcancel', () => {
         if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout);
         touchLeaveTimeout = setTimeout(() => {
@@ -491,8 +516,9 @@
           handleStopKey(btn.key);
           div.classList.remove('active');
           touchLeaveTimeout = null;
-        }, 20);
+        }, 30);
       });
+      
       grid.appendChild(div);
       keyToDiv[btn.key] = div;
       noteButtonRefs[btn.key] = div;
@@ -560,10 +586,13 @@
     window.addEventListener('keyup', function(e) {
       let key = e.key;
       if (keyMap[key]) {
-        handleStopKey(keyMap[key]);
-        keyHeldDown[key] = false;
-        // Remove active style
-        if (keyToDiv[key]) keyToDiv[key].classList.remove('active');
+        // Add small delay before stopping sounds to match touch behavior
+        setTimeout(() => {
+          handleStopKey(keyMap[key]);
+          keyHeldDown[key] = false;
+          // Remove active style
+          if (keyToDiv[key]) keyToDiv[key].classList.remove('active');
+        }, 30);
       }
       // Accidental-only releases
       if (key === "#" || key === "ArrowUp") {
