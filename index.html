@@ -10,7 +10,13 @@
 </head>
 <body>
   <div id="app-wrapper">
-    <div class="controls-bar" id="controls-bar"></div>
+    <div class="controls-bar" id="controls-bar">
+      <button class="accordion-toggle" id="accordion-toggle" aria-expanded="false" aria-controls="controls-content">
+        <span class="menu-text">Menu</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="controls-content" id="controls-content"></div>
+    </div>
     <div class="main-content">
       <div class="proportional-grid-wrapper">
         <div class="grid" id="grid"></div>
@@ -578,8 +584,8 @@
       }
     });
 
-    // --- CONTROLS BAR (unchanged) ---
-    const controlsBar = document.getElementById('controls-bar');
+    // --- CONTROLS BAR ---
+    const controlsBar = document.getElementById('controls-content');
     const keyButton = document.createElement('div');
     keyButton.className = 'control-area';
     keyButton.tabIndex = 0;
@@ -636,6 +642,66 @@
       volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
     });
 
+    // --- ACCORDION TOGGLE FUNCTIONALITY ---
+    const accordionToggle = document.getElementById('accordion-toggle');
+    const controlsContent = document.getElementById('controls-content');
+    let isAccordionExpanded = false;
+
+    function toggleAccordion() {
+      isAccordionExpanded = !isAccordionExpanded;
+      accordionToggle.setAttribute('aria-expanded', isAccordionExpanded);
+      controlsContent.classList.toggle('expanded', isAccordionExpanded);
+      
+      // Rotate arrow
+      const arrow = accordionToggle.querySelector('.toggle-arrow');
+      arrow.style.transform = isAccordionExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    function handleAccordionResize() {
+      const mq = window.matchMedia('(max-width: 550px)');
+      if (!mq.matches) {
+        // Desktop: always expanded, hide toggle
+        isAccordionExpanded = true;
+        accordionToggle.style.display = 'none';
+        controlsContent.classList.add('expanded');
+        controlsContent.classList.remove('mobile-collapsed');
+        accordionToggle.setAttribute('aria-expanded', 'true');
+      } else {
+        // Mobile: show toggle, collapsed by default
+        accordionToggle.style.display = 'flex';
+        controlsContent.classList.add('mobile-collapsed');
+        isAccordionExpanded = false;
+        controlsContent.classList.remove('expanded');
+        accordionToggle.setAttribute('aria-expanded', 'false');
+        // Reset arrow rotation
+        const arrow = accordionToggle.querySelector('.toggle-arrow');
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    accordionToggle.addEventListener('click', toggleAccordion);
+    accordionToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleAccordion();
+      }
+    });
+
+    // Initialize accordion state
+    setTimeout(() => { 
+      handleAccordionResize(); 
+      resizeGrid(); 
+      updateSolfegeColors(); 
+      updateBoxNames(); 
+    }, 200);
+    window.addEventListener('resize', handleAccordionResize);
+    window.addEventListener('DOMContentLoaded', () => setTimeout(() => { 
+      handleAccordionResize(); 
+      resizeGrid(); 
+      updateSolfegeColors(); 
+      updateBoxNames(); 
+    }, 1));
+
     // --- Resize logic (unchanged, but also call updateBoxNames) ---
     function resizeGrid() {
       const gridEl = document.getElementById('grid');
@@ -669,8 +735,6 @@
       if (toggleBtn) toggleBtn.style.fontSize = Math.max(fontSize * 1.1, 20) + 'px';
     }
     window.addEventListener('resize', resizeGrid);
-    window.addEventListener('DOMContentLoaded', () => setTimeout(() => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); }, 1));
-    setTimeout(() => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); }, 200);
     const mq = window.matchMedia("(max-width: 550px)");
     mq.addEventListener("change", () => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); });
 

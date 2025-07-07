@@ -9,16 +9,58 @@ html, body, #app-wrapper, .main-content {
   padding: 0.5vmin 0.5vmin 0 0.5vmin;
   background: #faf8f0;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: stretch;
-  gap: 1.5vw;
+  gap: 0;
   border-bottom: 1px solid #eee;
   z-index: 10;
   flex-shrink: 0;
   flex-grow: 0;
   flex-basis: auto;
-  transition: flex-direction 0.2s;
+  transition: all 0.3s ease;
+}
+
+.accordion-toggle {
+  display: none;
+  width: 100%;
+  padding: 0.8em 1em;
+  background: #fff;
+  border: none;
+  border-bottom: 1px solid #eee;
+  font-family: inherit;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  outline: none;
+  transition: background-color 0.2s;
+}
+
+.accordion-toggle:hover {
+  background: #f8f8f8;
+}
+
+.accordion-toggle:focus {
+  outline: 2px solid #007AFF;
+  outline-offset: -2px;
+}
+
+.toggle-arrow {
+  transition: transform 0.3s ease;
+  font-size: 0.8em;
+}
+
+.controls-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 1.5vw;
+  padding: 0;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 .main-content {
   flex: 1 1 0;
@@ -144,13 +186,31 @@ html, body, #app-wrapper, .main-content {
 }
 
 @media (max-width: 550px) {
-  .controls-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    padding-bottom: 0;
-    padding-top: 0;
+  .accordion-toggle {
+    display: flex;
   }
+  
+  .controls-content.mobile-collapsed:not(.expanded) {
+    max-height: 0;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+    display: none;
+  }
+  
+  .controls-content.mobile-collapsed.expanded {
+    max-height: 500px;
+    padding: 0.5vmin 0;
+    opacity: 1;
+  }
+  
+  .controls-content {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    padding: 0.5vmin 0;
+  }
+  
   .control-area, .volume-control {
     width: 100%;
     margin: 0;
@@ -163,176 +223,8 @@ html, body, #app-wrapper, .main-content {
     min-width: 0;
     font-size: clamp(1rem, min(2.5vw, 2.5vh, 1.5em), 1.5em);
   }
-  .controls-bar > *:last-child {
-    border-bottom: none !important;
-  }
-}
-html, body, #app-wrapper, .main-content {
-  height: 100%; min-height: 0; min-width: 0;
-  margin: 0; padding: 0; box-sizing: border-box;
-}
-#app-wrapper { display: flex; flex-direction: column; height: 100vh; }
-.controls-bar {
-  width: 100vw;
-  box-sizing: border-box;
-  padding: 0.5vmin 0.5vmin 0 0.5vmin;
-  background: #faf8f0;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: stretch;
-  gap: 1.5vw;
-  border-bottom: 1px solid #eee;
-  z-index: 10;
-  flex-shrink: 0;
-  flex-grow: 0;
-  flex-basis: auto;
-  transition: flex-direction 0.2s;
-}
-.main-content {
-  flex: 1 1 0;
-  display: flex; flex-direction: column;
-  min-height: 0; min-width: 0; height: 100%;
-  overflow: hidden; position: relative;
-}
-.proportional-grid-wrapper {
-  flex: 1 1 0;
-  min-height: 0; min-width: 0;
-  display: flex; align-items: center; justify-content: center;
-  position: relative; width: 100vw; overflow: hidden;
-}
-.grid {
-  position: relative;
-  width: 100%; height: 100%;
-}
-.cell, .note-button {
-  border-radius: 1vmin;
-  position: absolute;
-  display: flex; justify-content: center; align-items: center;
-  font-weight: bold;
-  color: white;
-  user-select: none;
-  transition: transform 0.1s, background-color 0.3s, font-size 0.2s;
-  outline: none;
-  min-width: 0; min-height: 0;
-  background: transparent;
-  z-index: 1;
-  font-family: 'EB Garamond', Garamond, 'Times New Roman', Times, serif;
-  letter-spacing: 0.02em;
-}
-.note-button { z-index: 2; }
-.active { transform: scale(1.30); }
-.control-area {
-  outline: none;
-  border-radius: 0.8vmin;
-  display: flex; align-items: center; justify-content: center;
-  font-size: clamp(1rem, min(2.8vw, 2.8vh, 2em), 2em);
-  padding: 0.3em 1em;
-  background: #fff;
-  white-space: nowrap;
-  margin: 0;
-  font-family: inherit;
-}
-.control-area.selected {
-  box-shadow: 0 0 0 0.6vmin #444a, 0 1px 8px #0002;
-  background: #ffff;
-}
-.arrow {
-  cursor: pointer;
-  padding: 0.2em 0.5em;
-  user-select: none;
-  font-size: inherit;
-  font-family: inherit;
-}
-.volume-control {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0.5vw;
-  font-size: clamp(1rem, min(2.2vw, 2.2vh, 1.2em), 1.2em);
-  user-select: none;
-  padding: 0.1em 0.6em;
-  background: #fff;
-  border-radius: 0.8vmin;
-  margin: 0;
-  font-family: inherit;
-}
-.volume-slider {
-  width: min(16vw, 140px);
-  accent-color: #007AFF;
-  cursor: pointer;
-  min-width: 60px;
-  max-width: 180px;
-}
-.volume-label { font-weight: bold; margin-right: 0.3em; }
-.volume-value {
-  width: 3.2em;
-  text-align: left;
-  color: #444;
-  font-variant-numeric: tabular-nums;
-  font-size: 1em;
-  margin-left: 0.3em;
-  letter-spacing: 0.04em;
-}
-.cell img.solfege-img {
-  max-width: 80%;
-  max-height: 80%;
-  width: auto;
-  height: auto;
-  display: block;
-  pointer-events: none;
-  user-select: none;
-  margin: auto;
-  background: transparent;
-}
-
-/* Chord toggle button (C/I) in grid cell */
-.chord-toggle-btn {
-  font-family: 'EB Garamond', Garamond, 'Times New Roman', Times, serif;
-  font-weight: bold;
-  font-size: 2em;
-  background: transparent;
-  border: none;
-  color: #222;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
-  transition: background 0.15s, color 0.15s, font-size 0.15s;
-}
-.chord-toggle-btn:focus {
-  outline: 2px solid #007AFF;
-  background: #f4f8ff;
-}
-
-/* Light grey border for the cell containing the toggle button */
-.toggle-cell-border {
-  border: 2.5px solid #ddd !important;
-  box-sizing: border-box;
-}
-
-@media (max-width: 550px) {
-  .controls-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    padding-bottom: 0;
-    padding-top: 0;
-  }
-  .control-area, .volume-control {
-    width: 100%;
-    margin: 0;
-    border-radius: 0;
-    border-top: none;
-    border-bottom: 1px solid #eee;
-    background: #fff;
-    justify-content: center;
-    min-height: 0;
-    min-width: 0;
-    font-size: clamp(1rem, min(2.5vw, 2.5vh, 1.5em), 1.5em);
-  }
-  .controls-bar > *:last-child {
+  
+  .controls-content > *:last-child {
     border-bottom: none !important;
   }
 }
