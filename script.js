@@ -105,16 +105,16 @@ const chordNamesDefault = {
   "8": "V/V", "9": "V/vi", "u": "IV", "i": "V", "o": "vi", "l": "iii", "k": "ii", "j": "I", "n": "IV/IV"
 };
 const chordNamesMinor = {
-  "j": "i", "i": "V", "u": "iv", "o": "VI", "k": "VII", "l": "III", "8": "IV", "9": "v", "n": "ii°7"
+  "j": "i", "i": "V", "u": "VI", "o": "iv", "k": "VII", "l": "III", "8": "IV", "9": "v", "n": "ii°7"
 };
 const chordNamesDorian = {
-  "j": "i", "i": "IV", "u": "bIII", "o": "bVII", "k": "ii", "l": "v", "8": "bVI", "9": "V", "n": "#iv°7"
+  "j": "i", "i": "IV", "u": "bIII", "o": "v", "k": "bVII", "l": "ii", "8": "bVI", "9": "vi°7", "n": "V"
 };
 const chordNamesPhrygian = {
-  "j": "i", "i": "bII", "u": "bvii", "o": "VI", "k": "bIII", "l": "iv", "8": "bVII", "9": "bV", "n": "v°"
+  "j": "i", "i": "bII", "u": "bIII", "o": "iv", "k": "VI", "l": "bvii", "8": "bV", "9": "v°", "n": "bVII"
 };
 const chordNamesLydian = {
-  "j": "I", "i": "V", "u": "II", "o": "vii", "k": "vi", "l": "iii", "8": "IV", "9": "ii°", "n": "#iv°"
+  "j": "I", "i": "V", "u": "II", "o": "iii", "k": "vi", "l": "vii", "8": "IV", "9": "#iv°", "n": "ii°"
 };
 
 const buttonOrder = ["8", "9", "u", "i", "o", "l", "k", "j", "n"];
@@ -135,63 +135,63 @@ const chordNamesAltByKey = {
 };
 
 const chordNamesAltByMinorKey = {
-    "C":  ["F", "Gm", "Fm", "G", "Ab", "Eb", "Bb", "Cm", "D°7"],
-    "Db": ["F#", "G#m", "F#m", "G#", "A", "E", "B", "C#m", "D#°7"],
-    "D":  ["G", "Am", "Gm", "A", "Bb", "F", "C", "Dm", "E°7"],
-    "Eb": ["G#", "A#m", "G#m", "A#", "B", "F#", "C#", "D#m", "E#°7"],
-    "E":  ["A", "Bm", "Am", "B", "C", "G", "D", "Em", "F#°7"],
-    "F":  ["Bb", "Cm", "Bbm", "C", "Db", "Ab", "Eb", "Fm", "G°7"],
-    "Gb": ["B", "C#m", "Bm", "C#", "D", "A", "E", "F#m", "G#°7"],
-    "G":  ["C", "Dm", "Cm", "D", "Eb", "Bb", "F", "Gm", "A°7"],
-    "Ab": ["C#", "D#m", "C#m", "D#", "E", "B", "F#", "G#m", "A#°7"],
-    "A":  ["D", "Em", "Dm", "E", "F", "C", "G", "Am", "B°7"],
-    "Bb": ["Eb", "Fm", "Ebm", "F", "Gb", "Db", "Ab", "Bbm", "C°7"],
-    "B":  ["E", "F#m", "Em", "F#", "G", "D", "A", "Bm", "C#°7"]
+    "C":  ["F", "Gm", "Ab", "G",  "Fm", "Eb", "Bb", "Cm", "D°7"],
+    "Db": ["F#", "G#m","A",  "G#", "F#m","E",  "B",  "C#m","D#°7"],
+    "D":  ["G",  "Am", "Bb", "A",  "Gm", "F",  "C",  "Dm", "E°7"],
+    "Eb": ["G#", "A#m","B",  "A#", "G#m","F#", "C#", "D#m","E#°7"],
+    "E":  ["A",  "Bm", "C",  "B",  "Am", "G",  "D",  "Em", "F#°7"],
+    "F":  ["Bb", "Cm", "Db", "C",  "Bbm","Ab", "Eb", "Fm", "G°7"],
+    "Gb": ["B",  "C#m","D",  "C#", "Bm", "A",  "E",  "F#m","G#°7"],
+    "G":  ["C",  "Dm", "Eb", "D",  "Cm", "Bb", "F",  "Gm", "A°7"],
+    "Ab": ["C#", "D#m","E",  "D#", "C#m","B",  "F#", "G#m","A#°7"],
+    "A":  ["D",  "Em", "F",  "E",  "Dm", "C",  "G",  "Am", "B°7"],
+    "Bb": ["Eb", "Fm", "Gb", "F",  "Ebm","Db", "Ab", "Bbm","C°7"],
+    "B":  ["E",  "F#m","G",  "F#", "Em", "D",  "A",  "Bm", "C#°7"]
 };
 
 const chordNamesAltByDorianKey = {
-    "C":  ["Ab", "G",  "Eb", "F",  "Bb", "Gm", "Dm", "Cm", "F#°7"],
-    "Db": ["A",  "G#", "E",  "F#", "B",  "G#m","D#m","C#m","G°7"],
-    "D":  ["Bb", "A",  "F",  "G",  "C",  "Am", "Em", "Dm", "G#°7"],
-    "Eb": ["Cb", "Bb", "Gb", "Ab", "Db", "Bbm","Fm", "Ebm","A°7"],
-    "E":  ["C",  "B",  "G",  "A",  "D",  "Bm", "F#m","Em", "A#°7"],
-    "F":  ["Db", "C",  "Ab", "Bb", "Eb", "Cm", "Gm", "Fm", "B°7"],
-    "Gb": ["D",  "C#", "A",  "B",  "E",  "C#m","G#m","F#m","B#°7"],
-    "G":  ["Eb", "D",  "Bb", "C",  "F",  "Dm", "Am", "Gm", "C#°7"],
-    "Ab": ["Fb", "Eb", "Cb", "Db", "Gb", "Ebm","Bbm","Abm","D°7"],
-    "A":  ["F",  "E",  "C",  "D",  "G",  "Em", "Bm", "Am", "D#°7"],
-    "Bb": ["Gb", "F",  "Db", "Eb", "Ab", "Fm", "Cm", "Bbm","E°7"],
-    "B":  ["G",  "F#", "D",  "E",  "A",  "F#m","C#m","Bm", "E#°7"]
+    "C":  ["Ab", "A°7", "Eb", "F",  "Gm", "Dm", "Bb", "Cm", "G"],
+    "Db": ["A",  "A#°7","E",  "F#", "G#m","D#m","B",  "C#m","G#"],
+    "D":  ["Bb", "B°7", "F",  "G",  "Am", "Em", "C",  "Dm", "A"],
+    "Eb": ["Cb", "C°7", "Gb", "Ab", "Bbm","Fm", "Db", "Ebm","Bb"],
+    "E":  ["C",  "C#°7","G",  "A",  "Bm", "F#m","D",  "Em", "B"],
+    "F":  ["Db", "D°7", "Ab", "Bb", "Cm", "Gm", "Eb", "Fm", "C"],
+    "Gb": ["D",  "D#°7","A",  "B",  "C#m","G#m","E",  "F#m","C#"],
+    "G":  ["Eb", "E°7", "Bb", "C",  "Dm", "Am", "F",  "Gm", "D"],
+    "Ab": ["Fb", "F°7", "Cb", "Db", "Ebm","Bbm","Gb", "Abm","Eb"],
+    "A":  ["F",  "F#°7","C",  "D",  "Em", "Bm", "G",  "Am", "E"],
+    "Bb": ["Gb", "G°7", "Db", "Eb", "Fm", "Cm", "Ab", "Bbm","F"],
+    "B":  ["G",  "G#°7","D",  "E",  "F#m","C#m","A",  "Bm", "F#"]
 };
 
 const chordNamesAltByPhrygianKey = {
-    "C":  ["Bb", "Gb", "Bbm", "Db", "Ab", "Fm", "Eb", "Cm", "G°"],
-    "Db": ["B",  "G",  "Bm",  "D",  "A",  "F#m","E",  "C#m","G#°"],
-    "D":  ["C",  "Ab", "Cm",  "Eb", "Bb", "Gm", "F",  "Dm", "A°"],
-    "Eb": ["Db", "A",  "C#m", "E",  "B",  "G#m","F#", "D#m","A#°"],
-    "E":  ["D",  "Bb", "Dm",  "F",  "C",  "Am", "G",  "Em", "B°"],
-    "F":  ["Eb", "Cb", "Ebm", "Gb", "Db", "Bbm","Ab", "Fm", "C°"],
-    "Gb": ["E",  "C",  "Em",  "G",  "D",  "Bm", "A",  "F#m","C#°"],
-    "G":  ["F",  "Db", "Fm",  "Ab", "Eb", "Cm", "Bb", "Gm", "D°"],
-    "Ab": ["Gb", "D",  "F#m", "A",  "E",  "C#m","B",  "G#m","D#°"],
-    "A":  ["G",  "Eb", "Gm",  "Bb", "F",  "Dm", "C",  "Am", "E°"],
-    "Bb": ["Ab", "Fb", "Abm", "Cb", "Gb", "Ebm","Db", "Bbm","F°"],
-    "B":  ["A",  "F",  "Am",  "C",  "G",  "Em", "D",  "Bm", "F#°"]
+    "C":  ["Gb", "G°", "Eb", "Db", "Fm", "Bbm", "Ab", "Cm", "Bb"],
+    "Db": ["G",  "G#°","E",  "D",  "F#m","Bm", "A",  "C#m","B"],
+    "D":  ["Ab", "A°", "F",  "Eb", "Gm", "Cm", "Bb", "Dm", "C"],
+    "Eb": ["A",  "A#°","Gb", "E",  "G#m","C#m","B",  "D#m","Db"],
+    "E":  ["Bb", "B°", "G",  "F",  "Am", "Dm", "C",  "Em", "D"],
+    "F":  ["Cb", "C°", "Ab", "Gb", "Bbm","Ebm","Db", "Fm", "Eb"],
+    "Gb": ["C",  "C#°","A",  "G",  "Bm", "Em", "D",  "F#m","E"],
+    "G":  ["Db", "D°", "Bb", "Ab", "Cm", "Fm", "Eb", "Gm", "F"],
+    "Ab": ["D",  "D#°","Cb", "A",  "C#m","F#m","E",  "G#m","Gb"],
+    "A":  ["Eb", "E°", "C",  "Bb", "Dm", "Gm", "F",  "Am", "G"],
+    "Bb": ["Fb", "F°", "Db", "Cb", "Ebm","Abm","Gb", "Bbm","Ab"],
+    "B":  ["F",  "F#°","D",  "C",  "Em", "Am", "G",  "Bm", "A"]
 };
 
 const chordNamesAltByLydianKey = {
-    "C":  ["F", "D°", "D", "G", "Bm", "Em", "Am", "C", "F#°"],
-    "Db": ["Gb", "Eb°", "Eb", "Ab", "Cm", "Fm", "Bbm", "Db", "G°"],
-    "D":  ["G", "E°", "E", "A", "C#m", "F#m", "Bm", "D", "G#°"],
-    "Eb": ["Ab", "F°", "F", "Bb", "Dm", "Gm", "Cm", "Eb", "A°"],
-    "E":  ["A", "F#°", "F#", "B", "D#m", "G#m", "C#m", "E", "A#°"],
-    "F":  ["Bb", "G°", "G", "C", "Em", "Am", "Dm", "F", "B°"],
-    "Gb": ["Cb", "Ab°", "Ab", "Db", "Fm", "Bbm", "Ebm", "Gb", "C°"],
-    "G":  ["C", "A°", "A", "D", "F#m", "Bm", "Em", "G", "C#°"],
-    "Ab": ["Db", "G°", "G", "Eb", "Gm", "Dm", "Cm", "Ab", "D°"],
-    "A":  ["D", "B°", "B", "E", "G#m", "C#m", "F#m", "A", "D#°"],
-    "Bb": ["Eb", "A°", "A", "F", "Am", "Em", "Dm", "Bb", "E°"],
-    "B":  ["E", "C#°", "C#", "F#", "A#m", "D#m", "G#m", "B", "E#°"]
+    "C":  ["F", "F#°", "D", "G", "Em", "Bm", "Am", "C", "D°"],
+    "Db": ["Gb", "G°",  "Eb", "Ab", "Fm", "Cm", "Bbm", "Db", "Eb°"],
+    "D":  ["G", "G#°", "E", "A", "F#m", "C#m", "Bm", "D", "E°"],
+    "Eb": ["Ab", "A°",  "F", "Bb", "Gm", "Dm", "Cm", "Eb", "F°"],
+    "E":  ["A", "A#°", "F#", "B", "G#m", "D#m", "C#m", "E", "F#°"],
+    "F":  ["Bb", "B°",  "G", "C", "Am", "Em", "Dm", "F", "G°"],
+    "Gb": ["Cb", "C°",  "Ab", "Db", "Bbm", "Fm", "Ebm", "Gb", "Ab°"],
+    "G":  ["C", "C#°", "A", "D", "Bm", "F#m", "Em", "G", "A°"],
+    "Ab": ["Db", "D°",  "Bb", "Eb", "Cm", "Gm", "Fm", "Ab", "Bb°"],
+    "A":  ["D", "D#°", "B", "E", "C#m", "G#m", "F#m", "A", "B°"],
+    "Bb": ["Eb", "E°",  "C", "F", "Dm", "Am", "Gm", "Bb", "C°"],
+    "B":  ["E", "E#°", "C#", "F#", "D#m", "A#m", "G#m", "B", "C#°"]
 };
 
 const harmonics = 20;
@@ -374,51 +374,51 @@ const majorChords = [
 ];
 
 const minorChords = [
-  { name: 'i', key: 'j', notes: {'C':['C3','G3','Eb4','C5']}, cells: ['5b','6b','7b','5c','6c','7c'] },
-  { name: 'V', key: 'i', notes: {'C':['G3','B4','D4','G4']}, cells: ['3b','4b','3c','4c'] },
-  { name: 'iv', key: 'u', notes: {'C':['F3','C4','Ab4','F4']}, cells: ['3a','4a'] },
-  { name: 'VI', key: 'o', notes: {'C':['Ab3','Eb4','C5','Ab4']}, cells: ['4d','3d'] },
-  { name: 'VII', key: 'k', notes: {'C':['Bb3','D4','F4','Bb4']}, cells: ['6a'] },
-  { name: 'III', key: 'l', notes: {'C':['Eb3','Bb3','G4','Eb4']}, cells: ['5a'] },
-  { name: 'IV', key: '8', notes: {'C':['F3','C4','A4','F4']}, cells: ['2a', '2b'] },
-  { name: 'v', key: '9', notes: {'C':['G3','Bb4','D4','G4']}, cells: ['2c','2d'] },
-  { name: 'ii°7', key: 'n', notes: {'C':['D3','Ab3','F4','B4']}, cells: ['8b','8c'] }
+  { name: 'i',    key: 'j', notes: {'C':['C3','G3','Eb4','C5']},      cells: ['5b','6b','7b','5c','6c','7c'] },
+  { name: 'V',    key: 'i', notes: {'C':['G3','G4','B4','D5']},      cells: ['3b','4b','3c','4c'] },
+  { name: 'VI',   key: 'u', notes: {'C':['Ab3','Eb4','Ab4','C5']},    cells: ['3a','4a'] },
+  { name: 'iv',   key: 'o', notes: {'C':['F3','C4','F4','Ab4']},     cells: ['4d','3d'] },
+  { name: 'VII',  key: 'k', notes: {'C':['Bb3','D4','F4','Bb4']},     cells: ['6a'] },
+  { name: 'III',  key: 'l', notes: {'C':['Eb3','Bb3','Eb4','G4']},    cells: ['5a'] },
+  { name: 'IV',   key: '8', notes: {'C':['F3','C4','F4','A4']},        cells: ['2a', '2b'] },
+  { name: 'v',    key: '9', notes: {'C':['G3','G4','Bb4','D5']},      cells: ['2c','2d'] },
+  { name: 'ii°7', key: 'n', notes: {'C':['D3','Ab3','F4','B4']},      cells: ['8b','8c'] }
 ];
 
 const dorianChords = [
-    { name: 'i', key: 'j', notes: {'C':['C3','G3','Eb4','C5']}, cells: ['5b','6b','7b','5c','6c','7c'] },
-    { name: 'IV', key: 'i', notes: {'C':['F3','C4','A4','F4']}, cells: ['3b','4b','3c','4c'] },
-    { name: 'bIII', key: 'u', notes: {'C':['Eb3','Bb3','G4','Eb4']}, cells: ['3a','4a'] },
-    { name: 'bVII', key: 'o', notes: {'C':['Bb3','F4','D5','Bb4']}, cells: ['4d','3d'] },
-    { name: 'ii', key: 'k', notes: {'C':['D3','A3','F4','D4']}, cells: ['6a'] },
-    { name: 'v', key: 'l', notes: {'C':['G3','D4','Bb4','G4']}, cells: ['5a'] },
-    { name: 'bVI', key: '8', notes: {'C':['Ab3','Eb4','C5','Ab4']}, cells: ['2a', '2b'] },
-    { name: 'V', key: '9', notes: {'C':['G3','B4','D5','G4']}, cells: ['2c','2d'] },
-    { name: '#iv°7', key: 'n', notes: {'C':['F#3','C4','Eb4','A4']}, cells: ['8b','8c'] }
+    { name: 'i',     key: 'j', notes: {'C':['C3','G3','Eb4','C5']},    cells: ['5b','6b','7b','5c','6c','7c'] },
+    { name: 'IV',    key: 'i', notes: {'C':['F3','C4','A4','F4']},      cells: ['3b','4b','3c','4c'] },
+    { name: 'bIII',  key: 'u', notes: {'C':['Eb3','Bb3','G4','Eb4']},    cells: ['3a','4a'] },
+    { name: 'v',     key: 'o', notes: {'C':['G3','D4','Bb4','G4']},      cells: ['4d','3d'] },
+    { name: 'bVII',  key: 'k', notes: {'C':['Bb3','F4','D5','Bb4']},     cells: ['6a'] },
+    { name: 'ii',    key: 'l', notes: {'C':['D3','A3','F4','D4']},      cells: ['5a'] },
+    { name: 'bVI',   key: '8', notes: {'C':['Ab3','Eb4','C5','Ab4']},    cells: ['2a', '2b'] },
+    { name: 'vi°7',  key: '9', notes: {'C':['F#3','C4','Eb4','A4']},    cells: ['2c','2d'] },
+    { name: 'V',     key: 'n', notes: {'C':['G3','B4','D5','G4']},      cells: ['8b','8c'] }
 ];
 
 const phrygianChords = [
     { name: 'i',    key: 'j', notes: {'C':['C3', 'G3', 'Eb4', 'C5']},    cells: ['5b','6b','7b','5c','6c','7c'] },
     { name: 'bII',  key: 'i', notes: {'C':['Db3', 'Ab3', 'F4', 'Db4']},  cells: ['3b','4b','3c','4c'] },
-    { name: 'bvii', key: 'u', notes: {'C':['Bb3', 'F4', 'Db5', 'Bb4']},  cells: ['3a','4a'] },
-    { name: 'VI',   key: 'o', notes: {'C':['Ab3', 'Eb4', 'C5', 'Ab4']},  cells: ['4d','3d'] },
-    { name: 'bIII', key: 'k', notes: {'C':['Eb3', 'Bb3', 'G4', 'Eb4']},  cells: ['6a'] },
-    { name: 'iv',   key: 'l', notes: {'C':['F3', 'C4', 'Ab4', 'F4']},   cells: ['5a'] },
-    { name: 'bVII', key: '8', notes: {'C':['Bb3', 'D5', 'F4', 'Bb4']},  cells: ['2a', '2b'] },
-    { name: 'bV',   key: '9', notes: {'C':['Gb3', 'Db4', 'Bb4', 'Gb4']},  cells: ['2c','2d'] },
-    { name: 'v°',   key: 'n', notes: {'C':['G3', 'Db4', 'Bb4', 'G4']},   cells: ['8b','8c'] }
+    { name: 'bIII', key: 'u', notes: {'C':['Eb3', 'Bb3', 'G4', 'Eb4']},  cells: ['3a','4a'] },
+    { name: 'iv',   key: 'o', notes: {'C':['F3', 'C4', 'Ab4', 'F4']},   cells: ['4d','3d'] },
+    { name: 'VI',   key: 'k', notes: {'C':['Ab3', 'Eb4', 'C5', 'Ab4']},  cells: ['6a'] },
+    { name: 'bvii', key: 'l', notes: {'C':['Bb3', 'F4', 'Db5', 'Bb4']},  cells: ['5a'] },
+    { name: 'bV',   key: '8', notes: {'C':['Gb3', 'Db4', 'Bb4', 'Gb4']},  cells: ['2a', '2b'] },
+    { name: 'v°',   key: '9', notes: {'C':['G3', 'Db4', 'Bb4', 'G4']},   cells: ['2c','2d'] },
+    { name: 'bVII', key: 'n', notes: {'C':['Bb3', 'D5', 'F4', 'Bb4']},  cells: ['8b','8c'] }
 ];
 
 const lydianChords = [
     { name: 'I',    key: 'j', notes: {'C': ['C3', 'G3', 'E4', 'C5']},    cells: ['5b','6b','7b','5c','6c','7c'] },
     { name: 'V',    key: 'i', notes: {'C': ['G3', 'G4', 'B4', 'D5']},    cells: ['3b','4b','3c','4c'] },
     { name: 'II',   key: 'u', notes: {'C': ['D3', 'A4', 'D4', 'F#4']},   cells: ['3a','4a'] },
-    { name: 'vii',  key: 'o', notes: {'C': ['B3', 'F#4', 'B4', 'D5']},   cells: ['4d','3d'] },
+    { name: 'iii',  key: 'o', notes: {'C': ['E3', 'E4', 'G4', 'B4']},    cells: ['4d','3d'] },
     { name: 'vi',   key: 'k', notes: {'C': ['A3', 'E4', 'A4', 'C5']},    cells: ['6a'] },
-    { name: 'iii',  key: 'l', notes: {'C': ['E3', 'E4', 'G4', 'B4']},    cells: ['5a'] },
+    { name: 'vii',  key: 'l', notes: {'C': ['B3', 'F#4', 'B4', 'D5']},   cells: ['5a'] },
     { name: 'IV',   key: '8', notes: {'C': ['F3', 'C4', 'F4', 'A4']},    cells: ['2a', '2b'] },
-    { name: 'ii°',  key: '9', notes: {'C': ['F3', 'D4', 'Ab4', 'D5']},   cells: ['2c','2d'] },
-    { name: '#iv°', key: 'n', notes: {'C': ['F#3', 'C4', 'F#4', 'A4']},  cells: ['8b','8c'] }
+    { name: '#iv°', key: '9', notes: {'C': ['F#3', 'C4', 'F#4', 'A4']},  cells: ['2c','2d'] },
+    { name: 'ii°',  key: 'n', notes: {'C': ['F3', 'D4', 'Ab4', 'D5']},   cells: ['8b','8c'] }
 ];
 
 const grid = document.getElementById('grid');
