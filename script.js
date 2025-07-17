@@ -20,6 +20,8 @@ let touchLeaveTimeout = null;
 
 const keyNames = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 const minorKeyNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B']; // For display only
+const mixolydianKeyNames = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+const locrianKeyNames = ['C', 'C#', 'D#', 'F#', 'G#', 'A#'];
 let currentKeyIndex = 0;
 let currentScale = 'Major'; // New state for the scale
 
@@ -124,6 +126,12 @@ const chordNamesPhrygian = {
 };
 const chordNamesLydian = {
   "j": "I", "i": "V", "u": "II", "o": "iii", "k": "vi", "l": "vii", "8": "IV", "9": "#iv°", "n": "ii°"
+};
+const chordNamesMixolydian = {
+  "j": "I", "i": "bVII", "u": "IV", "o": "v", "k": "ii", "l": "vi", "8": "bVI", "9": "bIII", "n": "iii°"
+};
+const chordNamesLocrian = {
+    "j": "i°", "i": "iv", "u": "biii", "o": "bvii", "k": "bII", "l": "bVI", "8": "IV", "9": "bVI+", "n": "bV"
 };
 
 const buttonOrder = ["8", "9", "u", "i", "o", "l", "k", "j", "n"];
@@ -248,6 +256,36 @@ const chordNamesAltByLydianKey = {
     "B":  ["E", "E#°", "C#", "F#", "D#m", "A#m", "G#m", "B", "C#°"]
 };
 
+const chordNamesAltByMixolydianKey = {
+    "C":  ["Ab", "Eb", "F", "Bb", "Gm", "Am", "Dm", "C", "E°"],
+    "Db": ["A",  "E",  "F#","B",  "G#m","A#m","D#m","C#","E#°"],
+    "D":  ["Bb", "F",  "G", "C",  "Am", "Bm", "Em", "D", "F#°"],
+    "Eb": ["B",  "Gb", "Ab","Db", "Bbm","Cm", "Fm", "Eb","G°"],
+    "E":  ["C",  "G",  "A", "D",  "Bm", "C#m","F#m","E", "G#°"],
+    "F":  ["Db", "Ab", "Bb","Eb", "Cm", "Dm", "Gm", "F", "A°"],
+    "Gb": ["D",  "A",  "B", "E",  "C#m","D#m","G#m","F#","A#°"],
+    "G":  ["Eb", "Bb", "C", "F",  "Dm", "Em", "Am", "G", "B°"],
+    "Ab": ["E",  "Cb", "Db","Gb", "Ebm","Fm", "Bbm","Ab","C°"],
+    "A":  ["F",  "C",  "D", "G",  "Em", "F#m","Bm", "A", "C#°"],
+    "Bb": ["Gb", "Db", "Eb","Ab", "Fm", "Gm", "Cm", "Bb","D°"],
+    "B":  ["G",  "D",  "E", "A",  "F#m","G#m","C#m","B", "D#°"]
+};
+
+const chordNamesAltByLocrianKey = {
+    "C":  ["F", "Ab+", "Ebm", "Fm", "Bbm", "Ab", "Db", "C°", "Gb"],
+    "Db": ["F#", "A+",  "Em",  "F#m","Bm",  "A",  "D",  "C#°","G"],
+    "D":  ["G", "Bb+", "Fm",  "Gm", "Cm",  "Bb", "Eb", "D°", "Ab"],
+    "Eb": ["G#", "B+",  "F#m", "G#m","C#m", "B",  "E",  "D#°","A"],
+    "E":  ["A", "C+",  "Gm",  "Am", "Dm",  "C",  "F",  "E°", "Bb"],
+    "F":  ["Bb", "Db+", "Abm", "Bbm","Ebm", "Db", "Gb", "F°", "Cb"],
+    "Gb": ["B", "D+",  "Am",  "Bm", "Em",  "D",  "G",  "F#°","C"],
+    "G":  ["C", "Eb+", "Bbm", "Cm", "Fm",  "Eb", "Ab", "G°", "Db"],
+    "Ab": ["C#", "E+",  "Bm",  "C#m","F#m", "E",  "A",  "G#°","D"],
+    "A":  ["D", "F+",  "Cm",  "Dm", "Gm",  "F",  "Bb", "A°", "Eb"],
+    "Bb": ["Eb", "Gb+", "C#m", "D#m","G#m", "F#", "B",  "A#°","E"],
+    "B":  ["E", "G+",  "Dm",  "Em", "Am",  "G",  "C",  "B°", "F"]
+};
+
 const harmonics = 20;
 const real = new Float32Array(harmonics);
 const imag = new Float32Array(harmonics);
@@ -365,6 +403,8 @@ function handlePlayKey(key) {
   else if (currentScale === 'Dorian') chords = dorianChords;
   else if (currentScale === 'Phrygian') chords = phrygianChords;
   else if (currentScale === 'Lydian') chords = lydianChords;
+  else if (currentScale === 'Mixolydian') chords = mixolydianChords;
+  else if (currentScale === 'Locrian') chords = locrianChords;
 
   const btn = chords.find(b => b.key === key);
   if (!btn) return;
@@ -415,7 +455,7 @@ function reTriggerHeldKeysAccidentals() {
 }
 
 const positions = {
-  '10a':[9,0],'10b':[9,1],'10c':[9,2],'10d':[9,3],'3a':[2,0],'4a':[3,0],'3b':[2,1],'4b':[3,1],'3c':[2,2],'4c':[3,2],'5a':[4,0],'6a':[5,0],'5b':[4,1],'6b':[5,1],'7b':[6,1],'5c':[4,2],'6c':[5,2],'7c':[6,2],'8a':[7,0],'8b':[7,1],'8c':[7,2],'8d':[7,3],'9a':[8,0],'9b':[8,1],'9c':[8,2],'9d':[8,3],'2a':[1,0],'2b':[1,1],'2c':[1,2],'2d':[1,3],'1a':[0,0],'1b':[0,1],'1c':[0,2],'1d':[0,3],'7a':[6,0],'3d':[2,3],'4d':[3,3],'5d':[4,3],'6d':[5,3],'7d':[6,3]
+  '10a':[9,0],'10b':[9,1],'10c':[9,2],'10d':[9,3],'3a':[2,0],'4a':[3,0],'3b':[2,1],'4b':[3,1],'3c':[2,2],'4c':[3,2],'5a':[4,0],'6a':[5,0],'5b':[4,1],'6b':[5,1],'7b':[6,1],'5c':[4,2],'6c':[5,2],'7c':[6,2],'8c':[7,2],'8d':[7,3],'9d':[8,3],'2a':[1,0],'2b':[1,1],'2c':[1,2],'2d':[1,3],'8b':[7,1],'3d':[2,3],'4d':[3,3],'5d':[4,3],'6d':[5,3],'7d':[6,3],'8a':[7,0],'9a':[8,0],'9b':[8,1],'9c':[8,2]
 };
 
 const majorChords = [
@@ -514,6 +554,30 @@ const lydianChords = [
     { name: 'ii°',  key: 'n', notes: {'C': ['F3', 'D4', 'Ab4', 'D5']},   cells: ['8b','8c'] }
 ];
 
+const mixolydianChords = [
+    { name: 'I',    key: 'j', notes: {'C': ['C3', 'G3', 'E4', 'C5']},       cells: ['5b','6b','7b','5c','6c','7c'] },
+    { name: 'bVII', key: 'i', notes: {'C': ['Bb3', 'F4', 'Bb4', 'D5']},     cells: ['3b','4b','3c','4c'] },
+    { name: 'IV',   key: 'u', notes: {'C': ['F3', 'C4', 'F4', 'A4']},       cells: ['3a','4a'] },
+    { name: 'v',    key: 'o', notes: {'C': ['G3', 'G4', 'Bb4', 'D5']},     cells: ['4d','3d'] },
+    { name: 'ii',   key: 'k', notes: {'C': ['D3', 'D4', 'F4', 'A4']},       cells: ['6a'] },
+    { name: 'vi',   key: 'l', notes: {'C': ['A3', 'E4', 'A4', 'C5']},       cells: ['5a'] },
+    { name: 'bVI',  key: '8', notes: {'C': ['Ab3', 'Eb4', 'Ab4', 'C5']},   cells: ['2a', '2b'] },
+    { name: 'bIII', key: '9', notes: {'C': ['Eb3', 'Eb4', 'G4', 'Bb4']},    cells: ['2c','2d'] },
+    { name: 'iii°', key: 'n', notes: {'C': ['E3', 'E4', 'G4', 'Bb4']},      cells: ['8b','8c'] }
+];
+
+const locrianChords = [
+    { name: 'i°',   key: 'j', notes: {'C': ['C4', 'Gb4', 'Eb4', 'C5']},    cells: ['5b','6b','7b','5c','6c','7c'] },
+    { name: 'iv',   key: 'i', notes: {'C': ['F3', 'F4', 'Ab4', 'C5']},     cells: ['3b','4b','3c','4c'] },
+    { name: 'biii', key: 'u', notes: {'C': ['Eb3', 'Bb3', 'Eb4', 'Gb4']},  cells: ['3a','4a'] },
+    { name: 'bvii', key: 'o', notes: {'C': ['Bb3', 'Db4', 'F4', 'Bb4']},  cells: ['4d','3d'] },
+    { name: 'bII',  key: 'k', notes: {'C': ['Db3', 'Db4', 'F4', 'Ab4']},   cells: ['6a'] },
+    { name: 'bVI',  key: 'l', notes: {'C': ['Ab3', 'Eb4', 'Ab4', 'C5']},   cells: ['5a'] },
+    { name: 'IV',   key: '8', notes: {'C': ['F3', 'F4', 'A4', 'C5']},     cells: ['2a', '2b'] },
+    { name: 'bVI+', key: '9', notes: {'C': ['Ab3', 'E4', 'Ab4', 'C5']},    cells: ['2c','2d'] },
+    { name: 'bV',   key: 'n', notes: {'C': ['Gb3', 'Db4', 'Gb4', 'Bb4']},  cells: ['8b','8c'] }
+];
+
 const grid = document.getElementById('grid');
 const keyToDiv = {};
 
@@ -527,6 +591,8 @@ function updateSolfegeColors() {
     else if (currentScale === 'Dorian') chords = dorianChords;
     else if (currentScale === 'Phrygian') chords = phrygianChords;
     else if (currentScale === 'Lydian') chords = lydianChords;
+    else if (currentScale === 'Mixolydian') chords = mixolydianChords;
+    else if (currentScale === 'Locrian') chords = locrianChords;
 
     if (currentScale === 'Major') {
         const currentKey = keyNames[currentKeyIndex];
@@ -540,7 +606,7 @@ function updateSolfegeColors() {
                 else div.style.backgroundColor = bgColors[btn.name] || '#ccc';
             }
         });
-    } else { // Minor, Dorian, Phrygian, and Lydian use root note coloring
+    } else { // Minor, Dorian, Phrygian, Lydian, Mixolydian and Locrian use root note coloring
         const currentKeyName = keyNames[currentKeyIndex];
         let nameList;
         if (currentScale === 'Minor') nameList = chordNamesAltByMinorKey[currentKeyName];
@@ -550,6 +616,8 @@ function updateSolfegeColors() {
         else if (currentScale === 'Dorian') nameList = chordNamesAltByDorianKey[currentKeyName];
         else if (currentScale === 'Phrygian') nameList = chordNamesAltByPhrygianKey[currentKeyName];
         else if (currentScale === 'Lydian') nameList = chordNamesAltByLydianKey[currentKeyName];
+        else if (currentScale === 'Mixolydian') nameList = chordNamesAltByMixolydianKey[currentKeyName];
+        else if (currentScale === 'Locrian') nameList = chordNamesAltByLocrianKey[currentKeyName];
         
         if (!nameList) { console.error("Chord list not found for key:", currentKeyName); return; }
 
@@ -623,6 +691,12 @@ function updateBoxNames() {
   } else if (currentScale === 'Lydian') {
     nameList = chordNamesAltByLydianKey[keyName];
     nameMap = chordNamesLydian;
+  } else if (currentScale === 'Mixolydian') {
+    nameList = chordNamesAltByMixolydianKey[keyName];
+    nameMap = chordNamesMixolydian;
+  } else if (currentScale === 'Locrian') {
+    nameList = chordNamesAltByLocrianKey[keyName];
+    nameMap = chordNamesLocrian;
   }
 
   if (useAlt) {
@@ -643,7 +717,11 @@ function updateBoxNames() {
 
 function updateKeyDisplay() {
     const displayName = (currentScale === 'Major' || currentScale === 'Dorian' || currentScale === 'Phrygian' || currentScale === 'Lydian') 
-        ? keyNames[currentKeyIndex] 
+        ? keyNames[currentKeyIndex]
+        : (currentScale === 'Mixolydian')
+        ? mixolydianKeyNames[currentKeyIndex]
+        : (currentScale === 'Locrian')
+        ? locrianKeyNames[currentKeyIndex]
         : minorKeyNames[currentKeyIndex];
     document.getElementById("key-name").textContent = displayName;
 }
@@ -696,8 +774,8 @@ majorChords.forEach(btn => {
   div.addEventListener('mouseup', () => { isTouching = false; handleStopKey(btn.key); div.classList.remove('active'); });
   div.addEventListener('mouseleave', () => { if(isTouching) { isTouching = false; handleStopKey(btn.key); div.classList.remove('active'); } });
   div.addEventListener('touchstart', (e) => { e.preventDefault(); isTouching = true; handlePlayKey(btn.key); div.classList.add('active'); window.focus(); });
-  div.addEventListener('touchend', () => { if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout); touchLeaveTimeout = setTimeout(() => { isTouching = false; handleStopKey(btn.key); div.classList.remove('active'); }, 50); });
-  div.addEventListener('touchcancel', () => { if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout); touchLeaveTimeout = setTimeout(() => { isTouching = false; handleStopKey(btn.key); div.classList.remove('active'); }, 50); });
+  div.addEventListener('touchend', () => { if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout); touchLeaveTimeout = setTimeout(() => { isTouching = false; handleStopKey(btn.key); div.classList.remove('active'); }, 20); });
+  div.addEventListener('touchcancel', () => { if (touchLeaveTimeout) clearTimeout(touchLeaveTimeout); touchLeaveTimeout = setTimeout(() => { isTouching = false; handleStopKey(btn.key); div.classList.remove('active'); }, 20); });
   grid.appendChild(div);
   keyToDiv[btn.key] = div;
   noteButtonRefs[btn.key] = div;
@@ -764,7 +842,7 @@ keyButton.innerHTML = `<div class="arrow" id="key-left">&#9664;</div><div id="ke
 
 const scaleControl = document.createElement('div');
 scaleControl.className = 'control-area';
-scaleControl.innerHTML = `<select id="scale-select" class="scale-select" aria-label="Scale select"><option value="Major">Major</option><option value="Minor">Minor</option><option value="Natural Minor">Natural Minor</option><option value="Harmonic Minor">Harmonic Minor</option><option value="Melodic Minor">Melodic Minor</option><option value="Dorian">Dorian</option><option value="Phrygian">Phrygian</option><option value="Lydian">Lydian</option></select>`;
+scaleControl.innerHTML = `<select id="scale-select" class="scale-select" aria-label="Scale select"><option value="Major">Major</option><option value="Minor">Minor</option><option value="Natural Minor">Natural Minor</option><option value="Harmonic Minor">Harmonic Minor</option><option value="Melodic Minor">Melodic Minor</option><option value="Dorian">Dorian</option><option value="Phrygian">Phrygian</option><option value="Lydian">Lydian</option><option value="Mixolydian">Mixolydian</option><option value="Locrian">Locrian</option></select>`;
 
 const waveButton = document.createElement('div');
 waveButton.className = 'control-area';
@@ -774,7 +852,7 @@ waveButton.innerHTML = '<div class="arrow" id="left-arrow">&#9664;</div><div id=
 
 const volumeControl = document.createElement('div');
 volumeControl.className = 'volume-control';
-volumeControl.innerHTML = `<span class="volume-label" id="volume-label" for="volume-slider">Volume</span><input type="range" min="0" max="1" step="0.01" value="0.4" id="volume-slider" class="volume-slider" aria-labelledby="volume-label"><span id="volume-value" class="volume-value">40%</span>`;
+volumeControl.innerHTML = `<span class="volume-label" id="volume-label" for="volume-slider">Volume</span><input type="range" min="0" max="1" step="0.01" value="0.4" id="volume-slider" class="volume-slider"><span id="volume-value">40%</span>`;
 volumeControl.tabIndex = 0;
 volumeControl.setAttribute('aria-label', 'Volume control');
 
