@@ -21,7 +21,7 @@ let touchLeaveTimeout = null;
 const keyNames = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 const minorKeyNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B']; // For display only
 const mixolydianKeyNames = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
-const locrianKeyNames = ['C', 'C#', 'D#', 'F#', 'G#', 'A#'];
+const locrianKeyNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 let currentKeyIndex = 0;
 let currentScale = 'Major'; // New state for the scale
 
@@ -170,7 +170,7 @@ const chordNamesAltByNaturalMinorKey = {
     "C":  ["Db", "D°7",  "Fm", "Gm", "Ab", "Eb", "Bb", "Cm", "G"],
     "Db": ["D",  "D#°7", "F#m","G#m","A",  "E",  "B",  "C#m","G#"],
     "D":  ["Eb", "E°7",  "Gm", "Am", "Bb", "F",  "C",  "Dm", "A"],
-    "Eb": ["E",  "F°",   "G#m","A#m","B",  "F#", "C#", "D#m","A#"],
+    "Eb": ["E",  "E#°",  "G#m","A#m","B",  "F#", "C#", "D#m","A#"],
     "E":  ["F",  "F#°7", "Am", "Bm", "C",  "G",  "D",  "Em", "B"],
     "F":  ["Gb", "G°7",  "Bbm","Cm", "Db", "Ab", "Eb", "Fm", "C"],
     "Gb": ["G",  "G#°7", "Bm", "C#m","D",  "A",  "E",  "F#m","C#"],
@@ -200,12 +200,12 @@ const chordNamesAltByMelodicMinorKey = {
     "C":  ["Ab", "Bb", "F", "G", "A°",  "Eb+", "Dm",  "Cm", "B°"],
     "Db": ["A",  "B",  "F#","G#","A#°", "E+",  "D#m", "C#m","B#°"],
     "D":  ["Bb", "C",  "G", "A", "B°",  "F+",  "Em",  "Dm", "C#°"],
-    "Eb": ["B",  "C#", "G#","A#","B#°", "F#+", "Fm",  "D#m","C𝄪°"],
+    "Eb": ["B",  "C#", "G#","A#","B#°", "F#+", "E#m", "D#m","C𝄪°"],
     "E":  ["C",  "D",  "A", "B", "C#°", "G+",  "F#m", "Em", "D#°"],
     "F":  ["Db", "Eb", "Bb","C", "D°",  "Ab+", "Gm",  "Fm", "E°"],
     "Gb": ["D",  "E",  "B", "C#","D#°", "A+",  "G#m", "F#m","E#°"],
     "G":  ["Eb", "F",  "C", "D", "E°",  "Bb+", "Am",  "Gm", "F#°"],
-    "Ab": ["E",  "F#", "C#","D#","E#°", "B+",  "Bbm", "G#m","F𝄪°"],
+    "Ab": ["E",  "F#", "C#","D#","E#°", "B+",  "A#m", "G#m","F𝄪°"],
     "A":  ["F",  "G",  "D", "E", "F#°", "C+",  "Bm",  "Am", "G#°"],
     "Bb": ["Gb", "Ab", "Eb","F", "G°",  "Db+", "Cm",  "Bbm","A°"],
     "B":  ["G",  "A",  "E", "F#","G#°", "D+",  "C#m", "Bm", "A#°"]
@@ -230,12 +230,12 @@ const chordNamesAltByPhrygianKey = {
     "C":  ["Gb", "G°", "Eb", "Db", "Fm", "Bbm", "Ab", "Cm", "Bb"],
     "Db": ["G",  "G#°","E",  "D",  "F#m","Bm", "A",  "C#m","B"],
     "D":  ["Ab", "A°", "F",  "Eb", "Gm", "Cm", "Bb", "Dm", "C"],
-    "Eb": ["A",  "A#°","Gb", "E",  "G#m","C#m","B",  "D#m","Db"],
+    "Eb": ["A",  "A#°","F#", "E",  "G#m","C#m","B",  "D#m","C#"],
     "E":  ["Bb", "B°", "G",  "F",  "Am", "Dm", "C",  "Em", "D"],
     "F":  ["Cb", "C°", "Ab", "Gb", "Bbm","Ebm","Db", "Fm", "Eb"],
     "Gb": ["C",  "C#°","A",  "G",  "Bm", "Em", "D",  "F#m","E"],
     "G":  ["Db", "D°", "Bb", "Ab", "Cm", "Fm", "Eb", "Gm", "F"],
-    "Ab": ["D",  "D#°","Cb", "A",  "C#m","F#m","E",  "G#m","Gb"],
+    "Ab": ["D",  "D#°","B",  "A",  "C#m","F#m","E",  "G#m","F#"],
     "A":  ["Eb", "E°", "C",  "Bb", "Dm", "Gm", "F",  "Am", "G"],
     "Bb": ["Fb", "F°", "Db", "Cb", "Ebm","Abm","Gb", "Bbm","Ab"],
     "B":  ["F",  "F#°","D",  "C",  "Em", "Am", "G",  "Bm", "A"]
@@ -260,12 +260,12 @@ const chordNamesAltByMixolydianKey = {
     "C":  ["Ab", "Eb", "F", "Bb", "Gm", "Am", "Dm", "C", "E°"],
     "Db": ["A",  "E",  "F#","B",  "G#m","A#m","D#m","C#","E#°"],
     "D":  ["Bb", "F",  "G", "C",  "Am", "Bm", "Em", "D", "F#°"],
-    "Eb": ["B",  "Gb", "Ab","Db", "Bbm","Cm", "Fm", "Eb","G°"],
+    "Eb": ["Cb", "Gb", "Ab","Db", "Bbm","Cm", "Fm", "Eb","G°"],
     "E":  ["C",  "G",  "A", "D",  "Bm", "C#m","F#m","E", "G#°"],
     "F":  ["Db", "Ab", "Bb","Eb", "Cm", "Dm", "Gm", "F", "A°"],
     "Gb": ["D",  "A",  "B", "E",  "C#m","D#m","G#m","F#","A#°"],
     "G":  ["Eb", "Bb", "C", "F",  "Dm", "Em", "Am", "G", "B°"],
-    "Ab": ["E",  "Cb", "Db","Gb", "Ebm","Fm", "Bbm","Ab","C°"],
+    "Ab": ["Fb", "Cb", "Db","Gb", "Ebm","Fm", "Bbm","Ab","C°"],
     "A":  ["F",  "C",  "D", "G",  "Em", "F#m","Bm", "A", "C#°"],
     "Bb": ["Gb", "Db", "Eb","Ab", "Fm", "Gm", "Cm", "Bb","D°"],
     "B":  ["G",  "D",  "E", "A",  "F#m","G#m","C#m","B", "D#°"]
@@ -282,7 +282,7 @@ const chordNamesAltByLocrianKey = {
     "G":  ["C", "Eb+", "Bbm", "Cm", "Fm",  "Eb", "Ab", "G°", "Db"],
     "Ab": ["C#", "E+",  "Bm",  "C#m","F#m", "E",  "A",  "G#°","D"],
     "A":  ["D", "F+",  "Cm",  "Dm", "Gm",  "F",  "Bb", "A°", "Eb"],
-    "Bb": ["Eb", "Gb+", "C#m", "D#m","G#m", "F#", "B",  "A#°","E"],
+    "Bb": ["D#", "F#+", "C#m", "D#m","G#m", "F#", "B",  "A#°","E"],
     "B":  ["E", "G+",  "Dm",  "Em", "Am",  "G",  "C",  "B°", "F"]
 };
 
@@ -455,7 +455,7 @@ function reTriggerHeldKeysAccidentals() {
 }
 
 const positions = {
-  '10a':[9,0],'10b':[9,1],'10c':[9,2],'10d':[9,3],'3a':[2,0],'4a':[3,0],'3b':[2,1],'4b':[3,1],'3c':[2,2],'4c':[3,2],'5a':[4,0],'6a':[5,0],'5b':[4,1],'6b':[5,1],'7b':[6,1],'5c':[4,2],'6c':[5,2],'7c':[6,2],'8c':[7,2],'8d':[7,3],'9d':[8,3],'2a':[1,0],'2b':[1,1],'2c':[1,2],'2d':[1,3],'8b':[7,1],'3d':[2,3],'4d':[3,3],'5d':[4,3],'6d':[5,3],'7d':[6,3],'8a':[7,0],'9a':[8,0],'9b':[8,1],'9c':[8,2]
+  '10a':[9,0],'10b':[9,1],'10c':[9,2],'10d':[9,3],'3a':[2,0],'4a':[3,0],'3b':[2,1],'4b':[3,1],'3c':[2,2],'4c':[3,2],'5a':[4,0],'6a':[5,0],'5b':[4,1],'6b':[5,1],'7b':[6,1],'5c':[4,2],'6c':[5,2],'7c':[6,2],'8a':[7,0],'8b':[7,1],'8c':[7,2],'8d':[7,3],'2a':[1,0],'2b':[1,1],'2c':[1,2],'2d':[1,3],'3d':[2,3],'4d':[3,3],'5d':[4,3],'6d':[5,3],'7d':[6,3],'9a':[8,0],'9b':[8,1],'9c':[8,2],'9d':[8,3]
 };
 
 const majorChords = [
@@ -625,10 +625,60 @@ function updateSolfegeColors() {
             const chordName = nameList[index];
             let color = '#ccc';
             if (chordName) {
-                const match = chordName.match(/^[A-G](b|#)?/);
-                const rootNote = match ? match[0] : null;
-                if (rootNote) {
-                    color = rootNoteColors[rootNote] || '#ccc';
+                // Special override for Bb Natural Minor's Cb chord
+                if (currentScale === 'Natural Minor' && currentKeyName === 'Bb' && chordName === 'Cb') {
+                    color = rootNoteColors['C']; // Force red color for Cb
+                } 
+                // Special override for C# Harmonic Minor's B#° chord
+                else if (currentScale === 'Harmonic Minor' && currentKeyName === 'Db' && chordName === 'B#°') {
+                    color = rootNoteColors['B']; // Force purple color for B#°
+                }
+                // Special override for C# and D# Melodic Minor's B#° chord
+                else if (currentScale === 'Melodic Minor' && (currentKeyName === 'Db' || currentKeyName === 'Eb') && chordName === 'B#°') {
+                    color = rootNoteColors['B']; // Force purple color for B#°
+                }
+                // Special override for Eb Dorian's Cb chord
+                else if (currentScale === 'Dorian' && currentKeyName === 'Eb' && chordName === 'Cb') {
+                    color = rootNoteColors['C']; // Force red color for Cb
+                }
+                // Special override for Ab Dorian's Fb chord
+                else if (currentScale === 'Dorian' && currentKeyName === 'Ab' && chordName === 'Fb') {
+                    color = rootNoteColors['F']; // Force green color for Fb
+                }
+                // Special override for F Phrygian's Cb chord
+                else if (currentScale === 'Phrygian' && currentKeyName === 'F' && chordName === 'Cb') {
+                    color = rootNoteColors['C']; // Force red color for Cb
+                }
+                // Special override for Bb Phrygian's Fb chord
+                else if (currentScale === 'Phrygian' && currentKeyName === 'Bb' && chordName === 'Fb') {
+                    color = rootNoteColors['F']; // Force green color for Fb
+                }
+                // Special override for Gb Lydian's Cb chord
+                else if (currentScale === 'Lydian' && currentKeyName === 'Gb' && chordName === 'Cb') {
+                    color = rootNoteColors['C']; // Force red color for Cb
+                }
+                // Special override for Eb Mixolydian's Cb chord
+                else if (currentScale === 'Mixolydian' && currentKeyName === 'Eb' && chordName === 'Cb') {
+                    color = rootNoteColors['C']; // Force red color for Cb
+                }
+                // Special override for Ab Mixolydian's Fb chord
+                else if (currentScale === 'Mixolydian' && currentKeyName === 'Ab' && chordName === 'Fb') {
+                    color = rootNoteColors['F']; // Force green color for Fb
+                }
+                // Special override for Ab Mixolydian's Cb chord
+                else if (currentScale === 'Mixolydian' && currentKeyName === 'Ab' && chordName === 'Cb') {
+                    color = rootNoteColors['C']; // Force red color for Cb
+                }
+                // Special override for F Locrian's Cb chord
+                else if (currentScale === 'Locrian' && currentKeyName === 'F' && chordName === 'Cb') {
+                    color = rootNoteColors['C']; // Force red color for Cb
+                }
+                else {
+                    const match = chordName.match(/^[A-G](b|#)?/);
+                    const rootNote = match ? match[0] : null;
+                    if (rootNote) {
+                        color = rootNoteColors[rootNote] || '#ccc';
+                    }
                 }
             }
             const div = keyToDiv[buttonKey];
@@ -716,7 +766,7 @@ function updateBoxNames() {
 }
 
 function updateKeyDisplay() {
-    const displayName = (currentScale === 'Major' || currentScale === 'Dorian' || currentScale === 'Phrygian' || currentScale === 'Lydian') 
+    const displayName = (currentScale === 'Major' || currentScale === 'Lydian') 
         ? keyNames[currentKeyIndex]
         : (currentScale === 'Mixolydian')
         ? mixolydianKeyNames[currentKeyIndex]
@@ -850,16 +900,9 @@ waveButton.tabIndex = 0;
 waveButton.setAttribute('aria-label', 'Waveform control');
 waveButton.innerHTML = '<div class="arrow" id="left-arrow">&#9664;</div><div id="waveform-name">triangle</div><div class="arrow" id="right-arrow">&#9654;</div>';
 
-const volumeControl = document.createElement('div');
-volumeControl.className = 'volume-control';
-volumeControl.innerHTML = `<span class="volume-label" id="volume-label" for="volume-slider">Volume</span><input type="range" min="0" max="1" step="0.01" value="0.4" id="volume-slider" class="volume-slider"><span id="volume-value">40%</span>`;
-volumeControl.tabIndex = 0;
-volumeControl.setAttribute('aria-label', 'Volume control');
-
 controlsBar.appendChild(keyButton);
 controlsBar.appendChild(scaleControl);
 controlsBar.appendChild(waveButton);
-controlsBar.appendChild(volumeControl);
 
 document.getElementById("key-left").onclick = () => {
   currentKeyIndex = (currentKeyIndex - 1 + keyNames.length) % keyNames.length;
@@ -892,15 +935,6 @@ document.getElementById("right-arrow").onclick = () => {
   currentWaveform = waveforms[currentWaveformIndex];
   document.getElementById("waveform-name").textContent = currentWaveform;
 };
-
-const volumeSlider = document.getElementById('volume-slider');
-const volumeValue = document.getElementById('volume-value');
-volumeSlider.value = globalVolume;
-volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
-volumeSlider.addEventListener('input', () => {
-  globalVolume = parseFloat(volumeSlider.value);
-  volumeValue.textContent = `${Math.round(globalVolume * 100)}%`;
-});
 
 function resizeGrid() {
   const gridEl = document.getElementById('grid');
