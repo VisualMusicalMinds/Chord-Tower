@@ -769,6 +769,25 @@ function updateSolfegeColors() {
             }
         });
     }
+    updateSimulatedKeyboardColors();
+}
+
+function updateSimulatedKeyboardColors() {
+    // Iterate over the defined key mappings
+    for (const computerKey in keyMap) {
+        const chordKey = keyMap[computerKey]; // e.g., 'j' for computer key 'f'
+        const chordBlockDiv = keyToDiv[chordKey]; // The main grid button div
+
+        if (chordBlockDiv) {
+            const chordColor = chordBlockDiv.style.backgroundColor;
+            const keyElement = document.querySelector(`#simulated-keyboard .key[data-key="${computerKey}"]`);
+            
+            if (keyElement) {
+                keyElement.style.backgroundColor = chordColor;
+                keyElement.style.color = 'white'; // Set text to white for better contrast
+            }
+        }
+    }
 }
 
 const cellRefs = {};
@@ -1115,13 +1134,17 @@ function resizeGrid() {
   if (toggleBtn) toggleBtn.style.fontSize = Math.max(fontSize * 1.1, 20) + 'px';
 }
 window.addEventListener('resize', resizeGrid);
-window.addEventListener('DOMContentLoaded', () => setTimeout(() => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); }, 1));
-setTimeout(() => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); }, 200);
-const mq = window.matchMedia("(max-width: 550px)");
-mq.addEventListener("change", () => { resizeGrid(); updateSolfegeColors(); updateBoxNames(); });
+window.addEventListener('DOMContentLoaded', () => {
+    resizeGrid();
+    updateKeyDisplay();
+    updateSolfegeColors();
+    updateBoxNames();
+    updateControlsBarColor();
+});
 
 // Initial Setup
 updateKeyDisplay();
 updateSolfegeColors();
 updateBoxNames();
 updateControlsBarColor();
+resizeGrid();
