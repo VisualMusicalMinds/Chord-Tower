@@ -137,7 +137,7 @@ const chordNamesMinor = {
   "j": "i", "i": "V", "u": "VI", "o": "iv", "k": "VII", "l": "III", "8": "IV", "9": "v", "n": "ii°7"
 };
 const chordNamesNaturalMinor = {
-  "j": "i", "i": "v", "u": "iv", "o": "bVI", "k": "bVII", "l": "bIII", "8": "bII", "9": "ii°7", "n": "V"
+  "j": "i", "i": "v", "u": "iv", "o": "bVI", "k": "bVII", "l": "bIII", "8": "bII", "9": "IV", "n": "V"
 };
 const chordNamesHarmonicMinor = {
   "j": "i", "i": "V", "u": "iv", "o": "bVI", "k": "vii°", "l": "bIII+", "8": "bII", "9": "bIII", "n": "IV"
@@ -194,18 +194,18 @@ const chordNamesAltByMinorKey = {
 };
 
 const chordNamesAltByNaturalMinorKey = {
-    "C":  ["Db", "D°7",  "Fm", "Gm", "Ab", "Eb", "Bb", "Cm", "G"],
-    "Db": ["D",  "D#°7", "F#m","G#m","A",  "E",  "B",  "C#m","G#"],
-    "D":  ["Eb", "E°7",  "Gm", "Am", "Bb", "F",  "C",  "Dm", "A"],
-    "Eb": ["Fb", "F°", "Abm", "Bbm", "Cb", "Gb", "Db", "Ebm", "Bb"],
-    "E":  ["F",  "F#°7", "Am", "Bm", "C",  "G",  "D",  "Em", "B"],
-    "F":  ["Gb", "G°7",  "Bbm","Cm", "Db", "Ab", "Eb", "Fm", "C"],
-    "Gb": ["G",  "G#°7", "Bm", "C#m","D",  "A",  "E",  "F#m","C#"],
-    "G":  ["Ab", "A°7",  "Cm", "Dm", "Eb", "Bb", "F",  "Gm", "D"],
-    "Ab": ["A",  "A#°7", "C#m","D#m","E",  "B",  "F#", "G#m","D#"],
-    "A":  ["Bb", "B°7",  "Dm", "Em", "F",  "C",  "G",  "Am", "E"],
-    "Bb": ["Cb", "C°7",  "Ebm","Fm", "Gb", "Db", "Ab", "Bbm","F"],
-    "B":  ["C",  "C#°7", "Em", "F#m","G",  "D",  "A",  "Bm", "F#"]
+    "C":  ["Db", "F",    "Fm", "Gm", "Ab", "Eb", "Bb", "Cm", "G"],
+    "Db": ["D",  "F#",   "F#m","G#m","A",  "E",  "B",  "C#m","G#"],
+    "D":  ["Eb", "G",    "Gm", "Am", "Bb", "F",  "C",  "Dm", "A"],
+    "Eb": ["Fb", "Ab",   "Abm","Bbm","Cb", "Gb", "Db", "Ebm","Bb"],
+    "E":  ["F",  "A",    "Am", "Bm", "C",  "G",  "D",  "Em", "B"],
+    "F":  ["Gb", "Bb",   "Bbm","Cm", "Db", "Ab", "Eb", "Fm", "C"],
+    "Gb": ["G",  "B",    "Bm", "C#m","D",  "A",  "E",  "F#m","C#"],
+    "G":  ["Ab", "C",    "Cm", "Dm", "Eb", "Bb", "F",  "Gm", "D"],
+    "Ab": ["A",  "C#",   "C#m","D#m","E",  "B",  "F#", "G#m","D#"],
+    "A":  ["Bb", "D",    "Dm", "Em", "F",  "C",  "G",  "Am", "E"],
+    "Bb": ["Cb", "Eb",   "Ebm","Fm", "Gb", "Db", "Ab", "Bbm","F"],
+    "B":  ["C",  "E",    "Em", "F#m","G",  "D",  "A",  "Bm", "F#"]
 };
 
 const chordNamesAltByHarmonicMinorKey = {
@@ -548,7 +548,7 @@ const naturalMinorChords = [
     { name: 'bVII', key: 'k', notes: {'C':['Bb3', 'D4', 'F4', 'Bb4']},   cells: ['6a'] },
     { name: 'bIII', key: 'l', notes: {'C':['Eb3', 'Bb3', 'Eb4', 'G4']},  cells: ['5a'] },
     { name: 'bII',  key: '8', notes: {'C':['Db3', 'Db4', 'F4', 'Ab4']},   cells: ['2a', '2b'] },
-    { name: 'ii°7', key: '9', notes: {'C':['D3', 'Ab3', 'F4', 'B4']},    cells: ['2c','2d'] },
+    { name: 'IV',   key: '9', notes: {'C':['F3', 'C4', 'A4', 'F4']},    cells: ['2c','2d'] },
     { name: 'V',    key: 'n', notes: {'C':['G3', 'G4', 'B4', 'D5']},    cells: ['8b','8c'] }
 ];
 
