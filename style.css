@@ -6,20 +6,31 @@ html, body, #app-wrapper, .main-content {
 .controls-bar {
   width: 100vw;
   box-sizing: border-box;
-  padding: 0.5vmin 0.5vmin 0 0.5vmin;
+  padding: 1vmin;
   background: #faf8f0;
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: stretch;
-  gap: 1.5vw;
+  align-items: flex-start;
+  gap: 1vw;
   border-bottom: 1px solid #eee;
   z-index: 10;
   flex-shrink: 0;
   flex-grow: 0;
   flex-basis: auto;
-  transition: flex-direction 0.2s;
+  transition: background-color 0.4s ease, border-color 0.4s ease;
 }
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1vmin;
+  justify-content: center;
+  align-items: stretch;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .main-content {
   flex: 1 1 0;
   display: flex; flex-direction: column;
@@ -60,10 +71,21 @@ html, body, #app-wrapper, .main-content {
   font-size: clamp(1rem, min(2.8vw, 2.8vh, 2em), 2em);
   padding: 0.3em 1em;
   background: #fff;
+  color: #333;
   white-space: nowrap;
   margin: 0;
   font-family: inherit;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  cursor: pointer;
 }
+
+.control-area.placeholder {
+  background-color: #f0f0f0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
 .control-area.selected {
   box-shadow: 0 0 0 0.6vmin #444a, 0 1px 8px #0002;
   background: #ffff;
@@ -115,14 +137,24 @@ html, body, #app-wrapper, .main-content {
   background: transparent;
 }
 /* New style for the scale dropdown */
+.scale-control-wrapper {
+  padding: 0;
+}
+
 .scale-select {
   font-family: inherit;
-  font-size: 0.9em;
+  font-size: inherit;
   border-radius: 0.5vmin;
-  border: 1px solid #ccc;
-  background: #fff;
-  padding: 0.2em 0.4em;
+  border: none;
+  background: transparent;
+  padding: 0.3em 1em;
   cursor: pointer;
+  width: 100%;
+  text-align: center;
+  color: #333;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* Chord toggle button (C/I) in grid cell */
@@ -155,25 +187,22 @@ html, body, #app-wrapper, .main-content {
 
 @media (max-width: 550px) {
   .controls-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    padding-bottom: 0;
-    padding-top: 0;
+    flex-direction: row; /* Keep as row for small screens */
+    align-items: flex-start;
+    gap: 1vw; /* Restore gap for smaller layout */
   }
   .control-area, .volume-control {
-    width: 100%;
+    width: auto;
     margin: 0;
-    border-radius: 0;
-    border-top: none;
-    border-bottom: 1px solid #eee;
+    border-radius: 0.8vmin;
+    border: 1px solid #ddd;
     background: #fff;
     justify-content: center;
     min-height: 0;
     min-width: 0;
     font-size: clamp(1rem, min(2.5vw, 2.5vh, 1.5em), 1.5em);
   }
-  .controls-bar > *:last-child {
-    border-bottom: none !important;
+  .control-group {
+    gap: 1vmin;
   }
 }
