@@ -769,7 +769,8 @@ function updateSolfegeColors() {
             }
         });
     }
-    updateSimulatedKeyboardColors();
+    // Defer the keyboard color update to ensure grid colors are painted
+    requestAnimationFrame(updateSimulatedKeyboardColors);
 }
 
 function updateSimulatedKeyboardColors() {
@@ -779,12 +780,18 @@ function updateSimulatedKeyboardColors() {
         const chordBlockDiv = keyToDiv[chordKey]; // The main grid button div
 
         if (chordBlockDiv) {
-            const chordColor = chordBlockDiv.style.backgroundColor;
+            // Use getComputedStyle to read the final rendered color
+            const chordColor = window.getComputedStyle(chordBlockDiv).backgroundColor;
             const keyElement = document.querySelector(`#simulated-keyboard .key[data-key="${computerKey}"]`);
             
             if (keyElement) {
-                keyElement.style.backgroundColor = chordColor;
-                keyElement.style.color = 'white'; // Set text to white for better contrast
+                if (chordColor) {
+                    keyElement.style.backgroundColor = chordColor;
+                    keyElement.style.color = 'white'; // Set text to white for better contrast
+                } else {
+                    keyElement.style.backgroundColor = ''; // Reset if no color
+                    keyElement.style.color = '';
+                }
             }
         }
     }
@@ -879,7 +886,7 @@ function renderToggleButton() {
   el.className = 'chord-toggle-btn';
   el.setAttribute('type', 'button');
   el.setAttribute('aria-pressed', cButtonState === 'I');
-  el.innerText = cButtonState === 'C' ? 'C' : 'I';
+  el.innerText = cButtonState === 'C' ? 'I' : 'C';
   el.addEventListener('click', () => {
     cButtonState = (cButtonState === 'C') ? 'I' : 'C';
     renderToggleButton();
@@ -1102,6 +1109,40 @@ window.addEventListener('click', (event) => {
   }
 });
 
+function setupSimulatedKeyboardEvents() {
+    const simulatedKeys = document.querySelectorAll('#simulated-keyboard .key[data-key]');
+    simulatedKeys.forEach(keyElement => {
+        const key = keyElement.getAttribute('data-key');
+
+        const handlePress = (e) => {
+            e.preventDefault();
+            if (!keyMap[key]) return; // Only handle keys that are mapped to chords
+
+            keyElement.classList.add('pressed');
+            const chordKey = keyMap[key];
+            handlePlayKey(chordKey);
+            if (keyToDiv[chordKey]) keyToDiv[chordKey].classList.add('active');
+        };
+
+        const handleRelease = (e) => {
+            e.preventDefault();
+            if (!keyMap[key]) return;
+
+            keyElement.classList.remove('pressed');
+            const chordKey = keyMap[key];
+            handleStopKey(chordKey);
+            if (keyToDiv[chordKey]) keyToDiv[chordKey].classList.remove('active');
+        };
+
+        keyElement.addEventListener('mousedown', handlePress);
+        keyElement.addEventListener('mouseup', handleRelease);
+        keyElement.addEventListener('mouseleave', handleRelease);
+
+        keyElement.addEventListener('touchstart', handlePress);
+        keyElement.addEventListener('touchend', handleRelease);
+        keyElement.addEventListener('touchcancel', handleRelease);
+    });
+}
 
 function resizeGrid() {
   const gridEl = document.getElementById('grid');
@@ -1140,6 +1181,7 @@ window.addEventListener('DOMContentLoaded', () => {
     updateSolfegeColors();
     updateBoxNames();
     updateControlsBarColor();
+    setupSimulatedKeyboardEvents();
 });
 
 // Initial Setup
