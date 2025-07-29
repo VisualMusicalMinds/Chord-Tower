@@ -36,6 +36,7 @@ html, body, #app-wrapper, .main-content {
   display: flex; flex-direction: column;
   min-height: 0; min-width: 0; height: 100%;
   overflow: hidden; position: relative;
+  margin-top: 1vmin; /* Add space between menu and grid */
 }
 .proportional-grid-wrapper {
   flex: 1 1 0;
@@ -54,13 +55,14 @@ html, body, #app-wrapper, .main-content {
   font-weight: bold;
   color: white;
   user-select: none;
-  transition: transform 0.1s, background-color 0.3s, font-size 0.2s;
+  transition: transform 0.1s, background-color 0.3s, font-size 0.2s, color 0.3s;
   outline: none;
   min-width: 0; min-height: 0;
   background: transparent;
   z-index: 1;
   font-family: 'EB Garamond', Garamond, 'Times New Roman', Times, serif;
   letter-spacing: 0.02em;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 .note-button { z-index: 2; }
 .active { transform: scale(1.30); }
