@@ -785,11 +785,13 @@ function updateSimulatedKeyboardColors() {
             const keyElement = document.querySelector(`#simulated-keyboard .key[data-key="${computerKey}"]`);
             
             if (keyElement) {
-                if (chordColor) {
-                    keyElement.style.backgroundColor = chordColor;
-                    keyElement.style.color = 'white'; // Set text to white for better contrast
+                // Check for a valid, non-transparent color
+                if (chordColor && chordColor !== 'rgba(0, 0, 0, 0)') {
+                    keyElement.style.background = chordColor; // Set background, not backgroundColor
+                    keyElement.style.color = 'white';
                 } else {
-                    keyElement.style.backgroundColor = ''; // Reset if no color
+                    // Reset to default if color is invalid
+                    keyElement.style.background = ''; 
                     keyElement.style.color = '';
                 }
             }
@@ -886,7 +888,7 @@ function renderToggleButton() {
   el.className = 'chord-toggle-btn';
   el.setAttribute('type', 'button');
   el.setAttribute('aria-pressed', cButtonState === 'I');
-  el.innerText = cButtonState === 'C' ? 'I' : 'C';
+  el.innerText = cButtonState === 'C' ? 'C' : 'I';
   el.addEventListener('click', () => {
     cButtonState = (cButtonState === 'C') ? 'I' : 'C';
     renderToggleButton();
@@ -954,13 +956,19 @@ const keyMap = {
   // V/vi, v(min), V(dor) -> 9
   "p": "9", "t": "9", "8": "9",
   // IV/IV, ii°7(min), #iv°7(dor) -> n
-  "h": "n", "g": "n", "0": "n" 
+  "h": "n", "g": "n", "0": "n",
+  // Accidental keys (no chord, but can be mapped if needed for other functions)
+  "-": null, "=": null
 };
 const keyHeldDown = {};
 
 window.addEventListener('keydown', function(e) {
   if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA" || document.activeElement.tagName === "SELECT" || document.activeElement.isContentEditable)) return;
   let key = e.key;
+  // Also handle simulated keyboard keydown
+  const keyElement = document.querySelector(`#simulated-keyboard .key[data-key="${key.toLowerCase()}"]`);
+  if (keyElement) keyElement.classList.add('pressed');
+
   if (keyMap[key] && !keyHeldDown[key]) {
     sharpTouchHeld = e.shiftKey;
     flatTouchHeld = e.altKey || e.ctrlKey;
@@ -976,6 +984,10 @@ window.addEventListener('keydown', function(e) {
 
 window.addEventListener('keyup', function(e) {
   let key = e.key;
+  // Also handle simulated keyboard keyup
+  const keyElement = document.querySelector(`#simulated-keyboard .key[data-key="${key.toLowerCase()}"]`);
+  if (keyElement) keyElement.classList.remove('pressed');
+
   if (keyMap[key]) {
     const chordKey = keyMap[key];
     handleStopKey(chordKey);
@@ -1116,20 +1128,20 @@ function setupSimulatedKeyboardEvents() {
 
         const handlePress = (e) => {
             e.preventDefault();
-            if (!keyMap[key]) return; // Only handle keys that are mapped to chords
+            const chordKey = keyMap[key];
+            if (!chordKey) return; // Only handle keys that are mapped to chords
 
             keyElement.classList.add('pressed');
-            const chordKey = keyMap[key];
             handlePlayKey(chordKey);
             if (keyToDiv[chordKey]) keyToDiv[chordKey].classList.add('active');
         };
 
         const handleRelease = (e) => {
             e.preventDefault();
-            if (!keyMap[key]) return;
+            const chordKey = keyMap[key];
+            if (!chordKey) return;
 
             keyElement.classList.remove('pressed');
-            const chordKey = keyMap[key];
             handleStopKey(chordKey);
             if (keyToDiv[chordKey]) keyToDiv[chordKey].classList.remove('active');
         };
