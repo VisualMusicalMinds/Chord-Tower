@@ -1010,9 +1010,10 @@ waveButton.tabIndex = 0;
 waveButton.setAttribute('aria-label', 'Waveform control');
 waveButton.innerHTML = '<div class="arrow" id="left-arrow">&#9664;</div><div id="waveform-name">triangle</div><div class="arrow" id="right-arrow">&#9654;</div>';
 
-const keyboardPlaceholder = document.createElement('div');
-keyboardPlaceholder.className = 'control-area placeholder';
-keyboardPlaceholder.textContent = 'Keyboard'; // This is the placeholder
+const keyboardButton = document.createElement('div');
+keyboardButton.className = 'control-area keyboard-button';
+keyboardButton.id = 'keyboard-button';
+keyboardButton.textContent = 'Keyboard';
 
 // Group key and scale controls vertically
 const keyScaleGroup = document.createElement('div');
@@ -1024,7 +1025,7 @@ keyScaleGroup.appendChild(scaleControl);
 const waveKeyboardGroup = document.createElement('div');
 waveKeyboardGroup.className = 'control-group';
 waveKeyboardGroup.appendChild(waveButton);
-waveKeyboardGroup.appendChild(keyboardPlaceholder);
+waveKeyboardGroup.appendChild(keyboardButton);
 
 controlsBar.appendChild(keyScaleGroup);
 controlsBar.appendChild(waveKeyboardGroup);
@@ -1063,6 +1064,25 @@ document.getElementById("right-arrow").onclick = () => {
   currentWaveform = waveforms[currentWaveformIndex];
   document.getElementById("waveform-name").textContent = currentWaveform;
 };
+
+// Modal handling
+const modal = document.getElementById('keyboard-modal');
+const closeButton = document.querySelector('.close-button');
+
+keyboardButton.addEventListener('click', () => {
+  modal.style.display = 'block';
+});
+
+closeButton.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
+
+window.addEventListener('click', (event) => {
+  if (event.target == modal) {
+    modal.style.display = 'none';
+  }
+});
+
 
 function resizeGrid() {
   const gridEl = document.getElementById('grid');
