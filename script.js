@@ -101,6 +101,16 @@ function transposeFrequency(freq, semitoneShift) {
 }
 
 // --- COLOR DATA from Chord-Tower ---
+const KEY_COLORS = {
+  'C': '#FF3B30', // Red
+  'D': '#FF9500', // Orange
+  'E': '#FFCC00', // Yellow
+  'F': '#34C759', // Green
+  'G': '#30c0c6', // Turquoise
+  'A': '#007AFF', // Blue
+  'B': '#AF52DE'  // Purple
+};
+
 const noteColorsByKey = {
   'C':   { 'I': '#FF3B30',    'ii': '#FF9500', 'iii': '#FFCC00', 'IV': '#34C759', 'V': '#30c0c6', 'vi': '#007AFF', 'IV/IV': '#AF52DE' },
   'Db':  { 'I': '#FF9500',    'ii': '#FFCC00', 'iii': '#34C759', 'IV': '#30c0c6', 'V': '#007AFF', 'vi': '#AF52DE', 'IV/IV': '#FF3B30' },
@@ -952,6 +962,34 @@ window.addEventListener('keyup', function(e) {
   if (key === "b" || key === "ArrowDown") { accidentalHeld.flat = false; flatTouchHeld = false; reTriggerHeldKeysAccidentals(); }
 });
 
+function darkenColor(hex, percent) {
+    hex = hex.replace('#', '');
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+    r = parseInt(r * (100 - percent) / 100);
+    g = parseInt(g * (100 - percent) / 100);
+    b = parseInt(b * (100 - percent) / 100);
+    r = (r < 0) ? 0 : r;
+    g = (g < 0) ? 0 : g;
+    b = (b < 0) ? 0 : b;
+    const rHex = (r.toString(16).length === 1) ? '0' + r.toString(16) : r.toString(16);
+    const gHex = (g.toString(16).length === 1) ? '0' + g.toString(16) : g.toString(16);
+    const bHex = (b.toString(16).length === 1) ? '0' + b.toString(16) : b.toString(16);
+    return `#${rHex}${gHex}${bHex}`;
+}
+
+function updateControlsBarColor() {
+    const keyName = getDisplayNameForKey(currentKeyIndex, currentScale);
+    const baseNote = keyName.charAt(0);
+    const color = KEY_COLORS[baseNote] || '#faf8f0'; // Default to original color
+    const borderColor = darkenColor(color, 30);
+    
+    const controlsBar = document.getElementById('controls-bar');
+    controlsBar.style.backgroundColor = color;
+    controlsBar.style.borderColor = borderColor;
+}
+
 const controlsBar = document.getElementById('controls-bar');
 controlsBar.innerHTML = ''; // Clear existing controls to rebuild
 
@@ -996,12 +1034,14 @@ document.getElementById("key-left").onclick = () => {
   updateKeyDisplay();
   updateSolfegeColors();
   updateBoxNames();
+  updateControlsBarColor();
 };
 document.getElementById("key-right").onclick = () => {
   currentKeyIndex = (currentKeyIndex + 1) % keyNames.length;
   updateKeyDisplay();
   updateSolfegeColors();
   updateBoxNames();
+  updateControlsBarColor();
 };
 
 document.getElementById("scale-select").addEventListener('change', (e) => {
@@ -1009,6 +1049,7 @@ document.getElementById("scale-select").addEventListener('change', (e) => {
   updateKeyDisplay();
   updateSolfegeColors();
   updateBoxNames();
+  updateControlsBarColor();
   document.body.focus();
 });
 
@@ -1063,3 +1104,4 @@ mq.addEventListener("change", () => { resizeGrid(); updateSolfegeColors(); updat
 updateKeyDisplay();
 updateSolfegeColors();
 updateBoxNames();
+updateControlsBarColor();
