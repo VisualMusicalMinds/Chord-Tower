@@ -75,7 +75,7 @@ html, body, #app-wrapper, .main-content {
   outline: none;
   border-radius: 0.8vmin;
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(1rem, min(2.8vw, 2.8vh, 2em), 2em);
+  font-size: clamp(1.1rem, min(3vw, 3vh, 2em), 2em);
   padding: 0.3em 1em;
   background: #fff;
   color: #333;
@@ -110,7 +110,7 @@ html, body, #app-wrapper, .main-content {
   cursor: pointer;
   padding: 0.2em 0.5em;
   user-select: none;
-  font-size: inherit;
+  font-size: 1.2em;
   font-family: inherit;
 }
 .volume-control {
