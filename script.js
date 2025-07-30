@@ -888,7 +888,7 @@ function renderToggleButton() {
   el.className = 'chord-toggle-btn';
   el.setAttribute('type', 'button');
   el.setAttribute('aria-pressed', cButtonState === 'I');
-  el.innerText = cButtonState === 'C' ? 'C' : 'I';
+  el.innerText = cButtonState === 'C' ? 'I' : 'C';
   el.addEventListener('click', () => {
     cButtonState = (cButtonState === 'C') ? 'I' : 'C';
     renderToggleButton();
@@ -956,9 +956,7 @@ const keyMap = {
   // V/vi, v(min), V(dor) -> 9
   "p": "9", "t": "9", "8": "9",
   // IV/IV, ii°7(min), #iv°7(dor) -> n
-  "h": "n", "g": "n", "0": "n",
-  // Accidental keys (no chord, but can be mapped if needed for other functions)
-  "-": null, "=": null
+  "h": "n", "g": "n", "9": "n" 
 };
 const keyHeldDown = {};
 
