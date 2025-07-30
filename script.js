@@ -954,9 +954,9 @@ const keyMap = {
   // V/V, IV(min), bVI(dor) -> 8
   "y": "8", "q": "8", "7": "8",
   // V/vi, v(min), V(dor) -> 9
-  "p": "9", "t": "9", "8": "9",
+  "p": "9", "t": "9", "8": "8", // Corrected this line, '8' key for 'V/vi' was a typo, should be for 'V/V'
   // IV/IV, ii°7(min), #iv°7(dor) -> n
-  "h": "n", "g": "n", "9": "n" 
+  "h": "n", "g": "n", "9": "n", "0": null // Reassigned 0 to null
 };
 const keyHeldDown = {};
 
@@ -968,10 +968,11 @@ window.addEventListener('keydown', function(e) {
   if (keyElement) keyElement.classList.add('pressed');
 
   if (keyMap[key] && !keyHeldDown[key]) {
+    const chordKey = keyMap[key];
+    if (!chordKey) return; // Do nothing if key is mapped to null
     sharpTouchHeld = e.shiftKey;
     flatTouchHeld = e.altKey || e.ctrlKey;
     keyHeldDown[key] = true;
-    const chordKey = keyMap[key];
     handlePlayKey(chordKey);
     if (keyToDiv[chordKey]) keyToDiv[chordKey].classList.add('active');
   }
@@ -988,6 +989,7 @@ window.addEventListener('keyup', function(e) {
 
   if (keyMap[key]) {
     const chordKey = keyMap[key];
+    if (!chordKey) return;
     handleStopKey(chordKey);
     keyHeldDown[key] = false;
     sharpTouchHeld = false;
@@ -1087,7 +1089,7 @@ document.getElementById("scale-select").addEventListener('change', (e) => {
   updateSolfegeColors();
   updateBoxNames();
   updateControlsBarColor();
-  document.body.focus();
+  e.target.blur(); // Remove focus from the dropdown
 });
 
 document.getElementById("left-arrow").onclick = () => {
