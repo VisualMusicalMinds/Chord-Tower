@@ -112,21 +112,6 @@ const KEY_COLORS = {
 };
 
 
-const rootNoteColors = {
-    'C': '#FF3B30', 'B#': '#FF3B30', 'Cb': '#FF3B30',
-    'C#': '#FF9500', 'Db': '#FF9500',
-    'D': '#FF9500',
-    'D#': '#FFCC00', 'Eb': '#FFCC00',
-    'E': '#FFCC00', 'Fb': '#FFCC00',
-    'E#': '#34C759', 'F': '#34C759',
-    'F#': '#30c0c6', 'Gb': '#30c0c6',
-    'G': '#30c0c6',
-    'G#': '#007AFF', 'Ab': '#007AFF',
-    'A': '#007AFF',
-    'A#': '#AF52DE', 'Bb': '#AF52DE',
-    'B': '#AF52DE',
-};
-
 // Define colors for sharp and flat notes
 const DARK_RED = '#990000';
 const DARK_BLUE = '#000099';
@@ -642,12 +627,11 @@ function updateSolfegeColors() {
         let color = '#ccc'; // Default color
 
         if (chordName) {
-            // Extract the root note from the chord name (e.g., 'Gm' -> 'G', 'F#' -> 'F#')
-            const match = chordName.match(/^[A-G](b|#)?/);
-            const rootNote = match ? match[0] : null;
+            // Extract the root note from the chord name (e.g., 'Gm' -> 'G', 'F#' -> 'F')
+            const rootNote = chordName.charAt(0).toUpperCase();
 
             if (rootNote) {
-                color = rootNoteColors[rootNote] || '#ccc';
+                color = KEY_COLORS[rootNote] || '#ccc';
             }
         }
 
