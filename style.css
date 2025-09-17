@@ -70,6 +70,11 @@ html, body, #app-wrapper, .main-content {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 .note-button { z-index: 2; }
+.accidental {
+  font-size: 0.75em;
+  position: relative;
+  top: -0.15em;
+}
 .active { transform: scale(1.30); }
 .control-area {
   outline: none;
