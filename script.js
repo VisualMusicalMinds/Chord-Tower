@@ -1042,13 +1042,24 @@ function resizeGrid() {
     gridWidth = availableWidth;
     gridHeight = availableWidth * (aspectH/aspectW);
   }
+
+  // Store original dimensions for font size calculation
+  const originalGridWidth = gridWidth;
+  const originalGridHeight = gridHeight;
+
+  // Increase grid size by 10%
+  gridWidth *= 1.1;
+  gridHeight *= 1.1;
+
   gridEl.style.width = gridWidth + 'px';
   gridEl.style.height = gridHeight + 'px';
   gridEl.style.marginLeft = "auto";
   gridEl.style.marginRight = "auto";
   gridEl.style.marginTop = "0";
   gridEl.style.marginBottom = "0";
-  const fontSize = Math.min(gridHeight / 11, gridWidth / 4) * 0.5;
+  
+  // Use original dimensions for font size calculation
+  const fontSize = Math.min(originalGridHeight / 11, originalGridWidth / 4) * 0.5;
   gridEl.querySelectorAll('.note-button').forEach(div => {
     div.style.fontSize = fontSize + 'px';
   });
