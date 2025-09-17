@@ -826,7 +826,7 @@ const keyMap = {
   // V/V, IV(min), bVI(dor) -> 8
   "y": "8", "q": "8", "7": "8",
   // V/vi, v(min), V(dor) -> 9
-  "p": "9", "t": "9", "8": "8", // Corrected this line, '8' key for 'V/vi' was a typo, should be for 'V/V'
+  "p": "9", "t": "9", "8": "9",
   // IV/IV, ii°7(min), #iv°7(dor) -> n
   "h": "n", "g": "n", "9": "n", "0": null // Reassigned 0 to null
 };
