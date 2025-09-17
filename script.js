@@ -743,7 +743,12 @@ function updateBoxNames() {
             }
         }
         
-        buttonDiv.textContent = useAlt ? chordName : functionName;
+        if (useAlt) {
+            const formattedChordName = chordName.replace(/(#|b|𝄪)/g, '<span class="accidental">$1</span>');
+            buttonDiv.innerHTML = formattedChordName;
+        } else {
+            buttonDiv.textContent = functionName;
+        }
         buttonDiv.style.color = textColor;
     });
 }
