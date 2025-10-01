@@ -1060,7 +1060,7 @@ function resizeGrid() {
   const originalGridHeight = gridHeight;
 
   // Increase grid size based on menu visibility
-  const sizeMultiplier = menuVisible ? 1.1 : 1.3;
+  const sizeMultiplier = menuVisible ? 1.1 : 1.2;
   gridWidth *= sizeMultiplier;
   gridHeight *= sizeMultiplier;
 
