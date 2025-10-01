@@ -366,76 +366,51 @@ html, body, #app-wrapper, .main-content {
   }
 }
 
-/* Menu toggle arrow */
-.menu-toggle-arrow {
-  position: absolute;
+/* Menu toggle button */
+.menu-toggle {
+  position: fixed;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  background: #007AFF;
-  border: 1px solid #0056b3;
+  background: #fff;
+  border: 1px solid #ddd;
   border-top: none;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-  padding: 2px 12px;
+  border-radius: 0 0 8px 8px;
+  padding: 8px 20px;
   cursor: pointer;
-  z-index: 11;
-  transition: all 0.3s ease;
+  z-index: 20;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: top 0.3s ease, background-color 0.3s ease;
 }
 
-.menu-toggle-arrow:hover {
-  background: #0056b3;
+.menu-toggle:hover {
+  background-color: #f5f5f5;
 }
 
-.menu-toggle-arrow .arrow-icon {
+.arrow-icon {
   display: inline-block;
   font-size: 1.2em;
-  color: white;
   transition: transform 0.3s ease;
+  color: #333;
 }
 
-.menu-collapsed .menu-toggle-arrow {
-  top: 0;
-  border-top: 1px solid #ddd;
-  border-bottom: none;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.menu-collapsed .menu-toggle-arrow .arrow-icon {
-  transform: rotate(180deg);
-}
-
-/* Controls bar collapse animation */
-.controls-bar {
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.menu-collapsed .controls-bar {
+/* When menu is hidden */
+.controls-bar.hidden {
   transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
 }
 
-/* Adjust main content when menu is collapsed */
-.menu-collapsed .main-content {
+.controls-bar {
+  transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.4s ease, border-color 0.4s ease;
+}
+
+/* Rotate arrow when menu is hidden */
+.menu-toggle.menu-hidden .arrow-icon {
+  transform: rotate(180deg);
+}
+
+/* Adjust main content padding when menu is hidden */
+.main-content.menu-hidden {
   margin-top: 0;
-}
-
-/* Position the arrow correctly when menu is visible */
-#app-wrapper:not(.menu-collapsed) .menu-toggle-arrow {
-  top: calc(var(--controls-height, 80px) - 1px);
-}
-
-@media (max-width: 550px) {
-  .menu-toggle-arrow {
-    padding: 3px 10px;
-  }
-  
-  .menu-toggle-arrow .arrow-icon {
-    font-size: 1em;
-  }
 }
