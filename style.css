@@ -365,3 +365,77 @@ html, body, #app-wrapper, .main-content {
     border-radius: 3px;
   }
 }
+
+/* Menu toggle arrow */
+.menu-toggle-arrow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #faf8f0;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding: 4px 12px;
+  cursor: pointer;
+  z-index: 11;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.menu-toggle-arrow:hover {
+  background: #f0f0f0;
+}
+
+.menu-toggle-arrow .arrow-icon {
+  display: inline-block;
+  font-size: 1.2em;
+  color: #333;
+  transition: transform 0.3s ease;
+}
+
+.menu-collapsed .menu-toggle-arrow {
+  top: 0;
+  border-top: 1px solid #ddd;
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.menu-collapsed .menu-toggle-arrow .arrow-icon {
+  transform: rotate(180deg);
+}
+
+/* Controls bar collapse animation */
+.controls-bar {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.menu-collapsed .controls-bar {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Adjust main content when menu is collapsed */
+.menu-collapsed .main-content {
+  margin-top: 0;
+}
+
+/* Position the arrow correctly when menu is visible */
+#app-wrapper:not(.menu-collapsed) .menu-toggle-arrow {
+  top: calc(var(--controls-height, 80px) - 1px);
+}
+
+@media (max-width: 550px) {
+  .menu-toggle-arrow {
+    padding: 3px 10px;
+  }
+  
+  .menu-toggle-arrow .arrow-icon {
+    font-size: 1em;
+  }
+}
