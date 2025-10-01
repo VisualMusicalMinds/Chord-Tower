@@ -1033,6 +1033,35 @@ function setupSimulatedKeyboardEvents() {
     });
 }
 
+// Menu toggle functionality
+function setupMenuToggle() {
+  const menuToggleArrow = document.getElementById('menu-toggle-arrow');
+  const appWrapper = document.getElementById('app-wrapper');
+  const controlsBar = document.getElementById('controls-bar');
+  let menuCollapsed = false;
+
+  // Update CSS variable for controls bar height
+  function updateControlsHeight() {
+    const height = controlsBar.offsetHeight;
+    document.documentElement.style.setProperty('--controls-height', `${height}px`);
+  }
+
+  menuToggleArrow.addEventListener('click', () => {
+    menuCollapsed = !menuCollapsed;
+    if (menuCollapsed) {
+      appWrapper.classList.add('menu-collapsed');
+    } else {
+      appWrapper.classList.remove('menu-collapsed');
+    }
+    // Recalculate grid size after animation
+    setTimeout(resizeGrid, 350);
+  });
+
+  // Update height on window resize
+  window.addEventListener('resize', updateControlsHeight);
+  updateControlsHeight();
+}
+
 function resizeGrid() {
   const gridEl = document.getElementById('grid');
   const gridWrapper = document.querySelector('.proportional-grid-wrapper');
@@ -1082,6 +1111,7 @@ window.addEventListener('DOMContentLoaded', () => {
     updateBoxNames();
     updateControlsBarColor();
     setupSimulatedKeyboardEvents();
+    setupMenuToggle(); // Add this line
 });
 
 // Initial Setup
@@ -1090,3 +1120,4 @@ updateSolfegeColors();
 updateBoxNames();
 updateControlsBarColor();
 resizeGrid();
+setupMenuToggle(); // Add this line
