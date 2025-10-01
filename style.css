@@ -372,12 +372,12 @@ html, body, #app-wrapper, .main-content {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  background: #faf8f0;
-  border: 1px solid #ddd;
+  background: #007AFF;
+  border: 1px solid #0056b3;
   border-top: none;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  padding: 4px 12px;
+  padding: 2px 12px;
   cursor: pointer;
   z-index: 11;
   transition: all 0.3s ease;
@@ -385,13 +385,13 @@ html, body, #app-wrapper, .main-content {
 }
 
 .menu-toggle-arrow:hover {
-  background: #f0f0f0;
+  background: #0056b3;
 }
 
 .menu-toggle-arrow .arrow-icon {
   display: inline-block;
   font-size: 1.2em;
-  color: #333;
+  color: white;
   transition: transform 0.3s ease;
 }
 
