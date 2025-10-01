@@ -839,7 +839,13 @@ const keyHeldDown = {};
 
 window.addEventListener('keydown', function(e) {
   if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA" || document.activeElement.tagName === "SELECT" || document.activeElement.isContentEditable)) return;
-  let key = e.key;
+  
+  const key = e.key;
+
+  if (key === 'm') {
+    menuToggle.click();
+  }
+
   // Also handle simulated keyboard keydown
   const keyElement = document.querySelector(`#simulated-keyboard .key[data-key="${key.toLowerCase()}"]`);
   if (keyElement) keyElement.classList.add('pressed');
@@ -1033,35 +1039,6 @@ function setupSimulatedKeyboardEvents() {
     });
 }
 
-// Menu toggle functionality
-function setupMenuToggle() {
-  const menuToggleArrow = document.getElementById('menu-toggle-arrow');
-  const appWrapper = document.getElementById('app-wrapper');
-  const controlsBar = document.getElementById('controls-bar');
-  let menuCollapsed = false;
-
-  // Update CSS variable for controls bar height
-  function updateControlsHeight() {
-    const height = controlsBar.offsetHeight;
-    document.documentElement.style.setProperty('--controls-height', `${height}px`);
-  }
-
-  menuToggleArrow.addEventListener('click', () => {
-    menuCollapsed = !menuCollapsed;
-    if (menuCollapsed) {
-      appWrapper.classList.add('menu-collapsed');
-    } else {
-      appWrapper.classList.remove('menu-collapsed');
-    }
-    // Recalculate grid size after animation
-    setTimeout(resizeGrid, 350);
-  });
-
-  // Update height on window resize
-  window.addEventListener('resize', updateControlsHeight);
-  updateControlsHeight();
-}
-
 function resizeGrid() {
   const gridEl = document.getElementById('grid');
   const gridWrapper = document.querySelector('.proportional-grid-wrapper');
@@ -1111,7 +1088,6 @@ window.addEventListener('DOMContentLoaded', () => {
     updateBoxNames();
     updateControlsBarColor();
     setupSimulatedKeyboardEvents();
-    setupMenuToggle(); // Add this line
 });
 
 // Initial Setup
@@ -1120,4 +1096,30 @@ updateSolfegeColors();
 updateBoxNames();
 updateControlsBarColor();
 resizeGrid();
-setupMenuToggle(); // Add this line
+
+// Menu toggle functionality
+const menuToggle = document.getElementById('menu-toggle');
+const controlsBarEl = document.getElementById('controls-bar');
+const mainContent = document.querySelector('.main-content');
+let menuVisible = true;
+
+menuToggle.addEventListener('click', () => {
+  menuVisible = !menuVisible;
+  
+  if (menuVisible) {
+    // Show menu
+    controlsBarEl.classList.remove('hidden');
+    menuToggle.classList.remove('menu-hidden');
+    mainContent.classList.remove('menu-hidden');
+  } else {
+    // Hide menu
+    controlsBarEl.classList.add('hidden');
+    menuToggle.classList.add('menu-hidden');
+    mainContent.classList.add('menu-hidden');
+  }
+  
+  // Resize grid to fill new available space
+  setTimeout(resizeGrid, 350); // Wait for animation to complete
+});
+
+// Redundant keydown listener removed
