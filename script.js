@@ -14,6 +14,7 @@ const waveforms = ['sine', 'triangle', 'square', 'sawtooth', 'voice'];
 let currentWaveformIndex = 1;
 let currentWaveform = waveforms[currentWaveformIndex];
 let globalVolume = 0.4;
+let menuVisible = true;
 
 // Add touch tolerance variable
 let touchLeaveTimeout = null;
@@ -1058,9 +1059,10 @@ function resizeGrid() {
   const originalGridWidth = gridWidth;
   const originalGridHeight = gridHeight;
 
-  // Increase grid size by 10%
-  gridWidth *= 1.1;
-  gridHeight *= 1.1;
+  // Increase grid size based on menu visibility
+  const sizeMultiplier = menuVisible ? 1.1 : 1.3;
+  gridWidth *= sizeMultiplier;
+  gridHeight *= sizeMultiplier;
 
   gridEl.style.width = gridWidth + 'px';
   gridEl.style.height = gridHeight + 'px';
@@ -1101,7 +1103,6 @@ resizeGrid();
 const menuToggle = document.getElementById('menu-toggle');
 const controlsBarEl = document.getElementById('controls-bar');
 const mainContent = document.querySelector('.main-content');
-let menuVisible = true;
 
 menuToggle.addEventListener('click', () => {
   menuVisible = !menuVisible;
