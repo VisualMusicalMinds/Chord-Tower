@@ -761,29 +761,39 @@ function updateKeyDisplay() {
     keyNameEl.textContent = displayName;
 }
 
-function renderToggleButton() {
-  const el = document.createElement('button');
-  el.className = 'chord-toggle-btn';
-  el.setAttribute('type', 'button');
-  el.setAttribute('aria-pressed', cButtonState === 'I');
-  el.innerText = cButtonState === 'C' ? 'I' : 'C';
-  el.addEventListener('click', () => {
-    cButtonState = (cButtonState === 'C') ? 'I' : 'C';
-    renderToggleButton();
-    updateBoxNames();
-  });
-  el.addEventListener('keydown', (e) => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      cButtonState = (cButtonState === 'C') ? 'I' : 'C';
-      renderToggleButton();
-      updateBoxNames();
-    }
-  });
-  cellRefs['5d'].innerHTML = '';
-  cellRefs['5d'].appendChild(el);
+const toggleButtonEl = document.createElement('button');
+toggleButtonEl.className = 'chord-toggle-btn';
+toggleButtonEl.setAttribute('type', 'button');
+
+function updateToggleButton() {
+  toggleButtonEl.setAttribute('aria-pressed', cButtonState === 'I');
+  if (cButtonState === 'C') {
+    // In chord mode, display the musical note
+    toggleButtonEl.innerHTML = '<span class="music-symbol">♩</span>';
+  } else {
+    // In Roman numeral mode, display 'I'
+    toggleButtonEl.innerText = 'I';
+  }
 }
-renderToggleButton();
+
+toggleButtonEl.addEventListener('click', () => {
+  cButtonState = (cButtonState === 'C') ? 'I' : 'C';
+  updateToggleButton();
+  updateBoxNames();
+});
+
+toggleButtonEl.addEventListener('keydown', (e) => {
+  if (e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    cButtonState = (cButtonState === 'C') ? 'I' : 'C';
+    updateToggleButton();
+    updateBoxNames();
+  }
+});
+
+cellRefs['5d'].innerHTML = '';
+cellRefs['5d'].appendChild(toggleButtonEl);
+updateToggleButton(); // Set initial state
 
 cellRefs['6d'].innerHTML = '';
 cellRefs['7d'].innerHTML = '';
