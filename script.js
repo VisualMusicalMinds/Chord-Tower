@@ -767,13 +767,7 @@ toggleButtonEl.setAttribute('type', 'button');
 
 function updateToggleButton() {
   toggleButtonEl.setAttribute('aria-pressed', cButtonState === 'I');
-  if (cButtonState === 'C') {
-    // In chord mode, display the musical note
-    toggleButtonEl.innerHTML = '<span class="music-symbol">♩</span>';
-  } else {
-    // In Roman numeral mode, display 'I'
-    toggleButtonEl.innerText = 'I';
-  }
+  toggleButtonEl.innerHTML = '<span class="music-symbol">&#9835;</span>';
 }
 
 toggleButtonEl.addEventListener('click', () => {
@@ -872,7 +866,7 @@ window.addEventListener('keydown', function(e) {
   }
   if (key === "#" || key === "ArrowUp") { accidentalHeld.sharp = true; sharpTouchHeld = true; reTriggerHeldKeysAccidentals(); }
   if (key === "b" || key === "ArrowDown") { accidentalHeld.flat = true; flatTouchHeld = true; reTriggerHeldKeysAccidentals(); }
-  if (key === "c" || key === "C") { cButtonState = (cButtonState === 'C') ? 'I' : 'C'; renderToggleButton(); updateBoxNames(); }
+  if (key === "c" || key === "C") { cButtonState = (cButtonState === 'C') ? 'I' : 'C'; updateToggleButton(); updateBoxNames(); }
 });
 
 window.addEventListener('keyup', function(e) {
